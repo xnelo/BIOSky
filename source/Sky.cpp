@@ -108,8 +108,8 @@ namespace BIO
 				Vector3D vertPos = verts->GetVertexPosition(i);
 				SkyPosition pos = CartesianToSky(vertPos.X, vertPos.Y, vertPos.Z);
 
-				if (PId2 <= pos.Zenith)
-					pos.Zenith = (float)PId2 - 0.01f;
+				if (MATH::PId2f <= pos.Zenith)
+					pos.Zenith = MATH::PId2f - 0.01f;
 
 				gamma = GetPerezGamma(pos.Zenith, pos.Azimuth, _sunPos.Zenith, _sunPos.Azimuth);
 				//if (MATH::BIO_PI2 < pointZenith)
@@ -189,7 +189,7 @@ namespace BIO
 			double zenith3 = pow(zenith, 3);
 			double turbidity2 = pow(turbidity, 2);
 
-			color.Y = ((4.0453f * turbidity - 4.971f) * tan((4.f / 9.f - turbidity / 120.f) * (PI - 2 * zenith)) - 0.2155f * turbidity + 2.4192f) * 1000.0f;
+			color.Y = ((4.0453f * turbidity - 4.971f) * tan((4.f / 9.f - turbidity / 120.f) * (MATH::PI - 2 * zenith)) - 0.2155f * turbidity + 2.4192f) * 1000.0f;
 			//double Yz = (4.0453 * turbidity - 4.9710) * tan((4.0 / 9 - turbidity / 120.0f) * (MATH::BIO_PI - 2 * zenith)) - 0.2155 * turbidity + 2.4192;
 			//double Y0 = (4.0453 * turbidity - 4.9710) * tan((4.0 / 9 - turbidity / 120.0f) * (MATH::BIO_PI)) - 0.2155 * turbidity + 2.4192;
 			//color.Y = Yz / Y0;

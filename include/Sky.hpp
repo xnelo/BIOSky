@@ -40,7 +40,7 @@
 #include "CompileConfig.h"
 #include "ISky.hpp"
 #include "IDomeGeometry.hpp"
-#include "Constants.hpp"
+#include "MathUtils.hpp"
 
 namespace BIO
 {
@@ -299,7 +299,7 @@ inline BIO::SKY::SkyPosition BIO::SKY::Sky::CartesianToSky(float x, float y, flo
 	return rtn;
 }
 
-inline BIO::SKY::ErrorType BIO::SKY::Sky::GetErrorCode()
+inline BIO::ErrorType BIO::SKY::Sky::GetErrorCode()
 {
 	return _error;
 }
@@ -325,13 +325,13 @@ inline double BIO::SKY::Sky::GetPerezGamma(float zenith, float azimuth, float so
 	if (a > 1)
 		return 0;
 	if (a < -1)
-		return PI;
+		return MATH::PI;
 	return acos(a);
 }
 
 inline double BIO::SKY::Sky::GetPerezLuminance(double zenith, double gamma, PerezCoefficient coeff)
 {
-	double cosZenith = (zenith == PId2 ? .0000001 : cos(zenith));
+	double cosZenith = (zenith == MATH::PId2 ? .0000001 : cos(zenith));
 	return (1 + coeff.A * exp(coeff.B / cosZenith)) * (1 + coeff.C * exp(coeff.D * gamma) + coeff.E * pow(cos(gamma), 2));
 }
 //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

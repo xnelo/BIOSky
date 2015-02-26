@@ -4,12 +4,12 @@
 *
 * @copyright 2015 Spencer Hoffa
 *
-* Defines the interface for the Skydome Geometry.
+* Defines error codes for the BIOEngine Library.
 */
 /*
 * The zlib/libpng License
 *
-* Copyright (c) 2015 Spencer Hoffa
+* Copyright (c) 2014 Spencer Hoffa
 *
 * This software is provided 'as-is', without any express or implied warranty.
 * In no event will the authors be held liable for any damages arising from the
@@ -33,47 +33,52 @@
 * This liscense can also be found at: http://opensource.org/licenses/Zlib
 */
 
-#ifndef ___BIOSKY_ERROR_HPP__2015___
-#define ___BIOSKY_ERROR_HPP__2015___
+#ifndef ___BIOENGINE_ERROR_H__2014___
+#define ___BIOENGINE_ERROR_H__2014___
 
 #include <string>
 
 namespace BIO
 {
-	namespace SKY
+	/**Define the ErrorType. Right now it is an integer.*/
+	typedef int ErrorType;
+
+	const ErrorType OK = 0;
+	const ErrorType RENDERER_DEVICE_FAILED_TO_INIT = -1;
+	const ErrorType LEVEL_FAILED_TO_LOAD__INVALID_FORMAT = -2;
+	const ErrorType LEVEL_FAILED_TO_LOAD__FILE_DOESNT_EXIST = -3;
+	const ErrorType ERROR_CREATING_OBJECT = -4;
+	const ErrorType TERRAIN_CREATION_ERROR = -5;
+	const ErrorType BIOSKY_FAILED_TO_INIT__GEOMETRY_NULL = -6;
+
+	/**
+	* Look up the string explination of an error code.
+	*
+	* @param errorCode The Code that we need to look up.
+	*
+	* @return Returns a string with the explination of the error code.
+	*/
+	inline std::string ErrorCodeToString(ErrorType errorCode)
 	{
-		typedef int ErrorType;
+		switch (errorCode)
+		{
+		case LEVEL_FAILED_TO_LOAD__FILE_DOESNT_EXIST:
+			return "Level Failed to Load: File Doesn't Exist";
+		case LEVEL_FAILED_TO_LOAD__INVALID_FORMAT:
+			return "Level Failed to Load: Invalid Format";
+		case RENDERER_DEVICE_FAILED_TO_INIT:
+			return "Rendering Device Failed to Initialize";
+		case ERROR_CREATING_OBJECT:
+			return "Object Failed to load.";
+		case BIOSKY_FAILED_TO_INIT__GEOMETRY_NULL:
+			return "Sky Failed To Init: Geometry NULL";
+		case OK:
+			return "OK";
+		default:
+			return "ERROR CODE UNRECOGNIZED";
+		}
+	}
 
-		const ErrorType OK = 0;
-		const ErrorType BIOSKY_FAILED_TO_INIT__GEOMETRY_NULL = -1;
-
-		/**
-		* Converts an error code into a legible string.
-		*
-		* @param errorCode The error code to look up.
-		*
-		* @return Returns a string with the error code string in it.
-		*/
-		std::string ErrorCodeToString(ErrorType errorCode);
-	}//end namespace SKY
 }//end namespace BIO
 
-inline std::string BIO::SKY::ErrorCodeToString(ErrorType errorCode)
-{
-	switch (errorCode)
-	{
-	case BIOSKY_FAILED_TO_INIT__GEOMETRY_NULL:
-		return "BIOSky class failed to Initialize: The passed in Geometry was NULL.";
-	case OK:
-		return "OK";
-	default:
-		return "Error Code Unrecognized.";
-	}
-}
-
-#endif //___BIOSKY_ERROR_HPP__2015___
-
-
-
-
-
+#endif //___BIOENGINE_ERROR_H__2014___

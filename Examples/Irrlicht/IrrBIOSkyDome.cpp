@@ -68,7 +68,7 @@ _vertData(NULL)
 
 	for (int i = 0; i < dome->numVertecies; i++)
 	{
-		buffer->Vertices.push_back(irr::video::S3DVertex(dome->vertecies[i].X, dome->vertecies[i].Y, dome->vertecies[i].Z, -1, -1, -1, clr, dome->UVTextureCoordinates[i].x, dome->UVTextureCoordinates[i].y));
+		buffer->Vertices.push_back(irr::video::S3DVertex(dome->vertecies[i].X, dome->vertecies[i].Y, dome->vertecies[i].Z, -1, -1, -1, clr, dome->UVTextureCoordinates[i].X, dome->UVTextureCoordinates[i].Y));
 	}
 
 	// Recalculate bounding box

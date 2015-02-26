@@ -81,7 +81,7 @@ public:
 	*
 	* @return A Vector3D with the point position contained in it.
 	*/
-	virtual BIO::SKY::Vector3D GetVertexPosition(int index);
+	virtual BIO::Vector3D GetVertexPosition(int index);
 
 	/**
 	* Set the Color for the vertex specified by the index. The passed
@@ -119,9 +119,9 @@ inline int IrrBIOSkyDomeVertecies::GetVertexCount()
 	return _vertexCount;
 }
 
-inline BIO::SKY::Vector3D IrrBIOSkyDomeVertecies::GetVertexPosition(int index)
+inline BIO::Vector3D IrrBIOSkyDomeVertecies::GetVertexPosition(int index)
 {
-	return BIO::SKY::Vector3D(
+	return BIO::Vector3D(
 		_vertecies[index].Pos.X,
 		_vertecies[index].Pos.Y,
 		_vertecies[index].Pos.Z);

@@ -17,7 +17,7 @@ BIO::SKY::SkyPosition _staticMoonPos;
 
 float DegreesToRadians(float degrees)
 {
-	return degrees * ((float)BIO::SKY::PI / 180.0f);
+	return degrees * (BIO::MATH::PIf / 180.0f);
 }
 
 enum GUI_IDS

@@ -39,6 +39,7 @@
 
 #include "CompileConfig.h"
 #include "Vector3D.hpp"
+#include "Vector2D.hpp"
 
 namespace BIO
 {
@@ -52,12 +53,6 @@ namespace BIO
 		{
 		public:
 
-			/**A stuct for a 2D vector*/
-			struct Vector2D
-			{
-				float x, y;
-			};
-
 			/**The indecies for the geometry*/
 			unsigned short * indecies;
 			/**Number of indecies.*/
@@ -65,7 +60,7 @@ namespace BIO
 			/**Vertex corrdinates data*/
 			Vector3D *vertecies;
 			/**UV Coordinates.*/
-			RawGeometry::Vector2D *UVTextureCoordinates;
+			Vector2D *UVTextureCoordinates;
 			/**Number of vertecies.*/
 			int numVertecies;
 

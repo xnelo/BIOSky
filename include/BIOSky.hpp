@@ -42,12 +42,14 @@
 //compile configurations
 #include "CompileConfig.h"
 //constants
-#include "Constants.hpp"
+#include "MathUtils.hpp"
 #include "Error.hpp"
 //Independent helper classes
 #include "SkyPosition.hpp"
 #include "RawGeometry.hpp"
 #include "Vector3D.hpp"
+#include "Vector2D.hpp"
+#include "GPS.hpp"
 //Interfaces
 #include "IDomeVertecies.hpp"
 #include "IDomeGeometry.hpp"
@@ -62,22 +64,6 @@ namespace BIO
 { 
 	namespace SKY
 	{
-		/**
-		* This function converts the 3D Skydome coordinates to its
-		* corosponding UV coordinates.
-		*
-		* @param domeX The X coordinate on the skydome.
-		*
-		* @param domeY The Y coordinate on the skydome.
-		*
-		* @param domeZ The Z coordinate on the skydome.
-		*
-		* @param domeRadius The Radius of the skydome.
-		*
-		* @return Returns a BIO2DVector that contains the x(u) y(v)
-		*			coordinate on the texture mape of the skydome.
-		*/
-		//BIOSKY_API Vector2df ConvertDomeToTextureCoordinate(float domeX, float domeY, float domeZ, float domeRadius);
 
 		/**
 		* Creates a skydome geometry that is compliant with this engine's
@@ -144,55 +130,7 @@ namespace BIO
 		*/
 		BIOSKY_API unsigned char * CreateSunTexture(int sideLength);
 
-		/**
-		* Calculate the distance between two points. The equation is:
-		*
-		* Distance = SquareRoot((x1-x2)^2 + (y1-y2)^2);
-		*
-		* @param x1 The x coordinate of the first point.
-		*
-		* @param y1 The y coordinate of the first point.
-		*
-		* @param x2 The x coordinate of the second point.
-		*
-		* @param y2 The y coordinate of the second point.
-		*
-		* @return Returns the distance between two points.
-		*/
-		float Distance(float x1, float y1, float x2, float y2);
-
-		/**
-		* Calculate the distance between two points squared. The equation is:
-		*
-		* Distance^2 = (x1-x2)^2 + (y1-y2)^2
-		*
-		* @param x1 The x coordinate of the first point.
-		*
-		* @param y1 The y coordinate of the first point.
-		*
-		* @param x2 The x coordinate of the second point.
-		*
-		* @param y2 The y coordinate of the second point.
-		*
-		* @return Returns the squared distance between two points.
-		*/
-		BIOSKY_API float SquaredDistance(float x1, float y1, float x2, float y2);
-
 	}//end namespace SKY
 }//end namespace BIO
-
-inline float BIO::SKY::Distance(float x1, float y1, float x2, float y2)
-{
-	return sqrt(SquaredDistance(x1, y1, x2, y2));
-}
-
-inline float BIO::SKY::SquaredDistance(float x1, float y1, float x2, float y2)
-{
-	float tmpx, tmpy;
-	tmpx = (x2 - x1);
-	tmpy = (y2 - y1);
-
-	return (tmpx * tmpx) + (tmpy * tmpy);
-}
 
 #endif //___BIOSKY_BIOSKY_HPP__2015___

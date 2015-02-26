@@ -80,10 +80,11 @@
     <ClInclude Include="include\BIOSky.hpp" />
     <ClInclude Include="include\CompileConfig.h" />
     <ClInclude Include="include\Error.hpp" />
+    <ClInclude Include="include\GPS.hpp" />
     <ClInclude Include="include\ISky.hpp" />
+    <ClInclude Include="include\MathUtils.hpp" />
     <ClInclude Include="include\SkyStaticCalculated.hpp" />
     <ClInclude Include="include\SkyStaticManual.hpp" />
-    <ClInclude Include="include\Constants.hpp" />
     <ClInclude Include="include\Sky.hpp" />
     <ClInclude Include="include\SkyStatic.hpp" />
     <ClInclude Include="include\IDomeGeometry.hpp" />
@@ -91,10 +92,13 @@
     <ClInclude Include="include\RawGeometry.hpp" />
     <ClInclude Include="include\SkyCalculations.hpp" />
     <ClInclude Include="include\SkyPosition.hpp" />
+    <ClInclude Include="include\Vector2D.hpp" />
     <ClInclude Include="include\Vector3D.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\BIOSky.cpp" />
+    <ClCompile Include="source\GPS.cpp" />
+    <ClCompile Include="source\SkyCalculations.cpp" />
     <ClCompile Include="source\SkyStaticCalculated.cpp" />
     <ClCompile Include="source\Sky.cpp" />
     <ClCompile Include="source\MoonTexture.c" />

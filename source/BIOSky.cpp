@@ -34,7 +34,6 @@
 */
 
 #include "BIOSky.hpp"
-#include <cmath>
 
 #include "../source/MoonTexture.c"
 
@@ -64,7 +63,7 @@ namespace BIO
 
 			//Vector3df * verts = new Vector3df[totalVerts];
 			rtnValue->vertecies = new Vector3D[totalVerts];
-			rtnValue->UVTextureCoordinates = new RawGeometry::Vector2D[totalVerts];
+			rtnValue->UVTextureCoordinates = new Vector2D[totalVerts];
 			int vertOn = 0;
 
 			//set the cap
@@ -101,13 +100,13 @@ namespace BIO
 			//create the vertecies
 			//first vert is at 0,radius,0
 			rtnValue->vertecies[0].X = 0; rtnValue->vertecies[0].Y = radius; rtnValue->vertecies[0].Z = 0;
-			rtnValue->UVTextureCoordinates[0].x = rtnValue->UVTextureCoordinates[0].y = 0.5f;
+			rtnValue->UVTextureCoordinates[0].X = rtnValue->UVTextureCoordinates[0].Y = 0.5f;
 			vertOn++;
 
 			double currHeight = radius;
 			//double heightStep = radius / numHorozontalSegments;
-			double currAngle = PId2;//BIOSKY_PI2;
-			double angleStep = PId2 / (double)numHorozontalSegments;
+			double currAngle = MATH::PId2;
+			double angleStep = MATH::PId2 / (double)numHorozontalSegments;
 
 			for (int i = 0; i < numHorozontalSegments; i++)
 			{
@@ -122,7 +121,7 @@ namespace BIO
 
 				double currRadius = std::sqrt((radius * radius) - (currHeight * currHeight));
 
-				double circleStep = PIx2 / numVerticalSegments;
+				double circleStep = MATH::PIx2 / numVerticalSegments;
 				double currAngle = 0;
 				for (int j = 0; j < numVerticalSegments; j++)
 				{
@@ -130,8 +129,8 @@ namespace BIO
 					rtnValue->vertecies[vertOn].Y = (float)(currHeight);
 					rtnValue->vertecies[vertOn].Z = (float)(currRadius * std::sin(currAngle));
 
-					rtnValue->UVTextureCoordinates[vertOn].x = (rtnValue->vertecies[vertOn].X / (2 * (radius + rtnValue->vertecies[vertOn].Y))) + 0.5f;
-					rtnValue->UVTextureCoordinates[vertOn].y = (rtnValue->vertecies[vertOn].Z / (2 * (radius + rtnValue->vertecies[vertOn].Y))) + 0.5f;
+					rtnValue->UVTextureCoordinates[vertOn].X = (rtnValue->vertecies[vertOn].X / (2 * (radius + rtnValue->vertecies[vertOn].Y))) + 0.5f;
+					rtnValue->UVTextureCoordinates[vertOn].Y = (rtnValue->vertecies[vertOn].Z / (2 * (radius + rtnValue->vertecies[vertOn].Y))) + 0.5f;
 					vertOn++;
 
 					currAngle += circleStep;
@@ -199,7 +198,7 @@ namespace BIO
 					//R Value
 					rtn[index + 2] = 255;
 
-					float dist = Distance((float)i, (float)j, c, c);
+					float dist = MATH::Distance((float)i, (float)j, c, c);
 
 					if (dist <= radius)
 					{
