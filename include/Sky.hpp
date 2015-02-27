@@ -273,6 +273,13 @@ namespace BIO
 			BIOSKY_API virtual void Update(float deltaTime) = 0;
 
 			/**
+			* Update the Moon's position with the current parameters.
+			*
+			* @note This function should NOT be called every frame.
+			*/
+			BIOSKY_API virtual void UpdateMoonPosition() = 0;
+
+			/**
 			* Update the sky color.
 			*
 			* @note In classes that derive from BIO::SKY::IBIOSkyStatic this
@@ -284,6 +291,13 @@ namespace BIO
 			*		when either of the IBIOSky::Update functions are called.
 			*/
 			BIOSKY_API void UpdateSkyColor();
+
+			/**
+			* Update the SunPosition with the current parameters.
+			*
+			* @note This function should NOT be called every frame.
+			*/
+			BIOSKY_API virtual void UpdateSunPosition() = 0;
 		};
 	}//end namespace SKY
 }//end namespace BIO

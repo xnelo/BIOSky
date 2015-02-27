@@ -76,6 +76,17 @@ namespace BIO
 		numType Distance(numType x1, numType y1, numType x2, numType y2);
 
 		/**
+		* RevolutionReductionDegrees will take an angle and will return the
+		* equivalant value between [0,360).
+		*
+		* @param angle The angle to reduce.
+		*
+		* @return Returns the equivalant angle between [0,360) degrees.
+		*/
+		template<typename numType>
+		numType RevolutionReductionDegrees(numType angle);
+
+		/**
 		* Calculate the distance between two points squared. The equation is:
 		*
 		* Distance^2 = (x1-x2)^2 + (y1-y2)^2
@@ -99,6 +110,12 @@ template<typename numType>
 inline numType BIO::MATH::Distance(numType x1, numType y1, numType x2, numType y2)
 {
 	return sqrt(SquaredDistance(x1, y1, x2, y2));
+}
+
+template<typename numType>
+inline numType BIO::MATH::RevolutionReductionDegrees(numType angle)
+{
+	return  (numType)(angle - floor(angle / 360.0)*360.0);
 }
 
 template<typename numType>

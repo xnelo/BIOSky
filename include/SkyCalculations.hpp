@@ -37,8 +37,10 @@
 #define ___BIOSKY_SKYCALCULATIONS_HPP__2015___
 
 #include "CompileConfig.h"
-//#include "IDateTime.hpp"
-//#include "IGPS.h"
+#include "DateTime.hpp"
+#include "GPS.hpp"
+#include "SkyPosition.hpp"
+#include "BIOSkyFunctions.hpp"
 
 namespace BIO
 {
@@ -53,16 +55,32 @@ namespace BIO
 			/**Is _dateTime pointing to a user variable.*/
 			bool _userDateTime;
 			/**The Date and Time for the sky calculations.*/
-			//IDateTime * _dateTime;
+			DateTime * _dateTime;
 			/**Is _gps pointing to a user variable.*/
 			bool _userGPS;
 			/**The GPS coordinates on the Earth for the sky calculations.*/
-			//IGPS * _gps;
+			GPS * _gps;
 
 			/**
-			* Clear this class an set it to new conditions.
+			* Delete all the pointers in this class
+			*
+			* @note It actually only deletes if this class created the pointer.
 			*/
-			void _clear();
+			void _delete();
+			
+			/**
+			* Delete the date time pointer.
+			*
+			* @note It actually only deletes if this class created the pointer.
+			*/
+			void _deleteDateTime();
+
+			/**
+			* Delete the GPS pointer.
+			*
+			* @note It actually only deletes if this class created the pointer.
+			*/
+			void _deleteGPS();
 		private:
 			/**
 			* Copy constructor
@@ -93,7 +111,7 @@ namespace BIO
 			*			charge of cleaning up the memory. This class does no 
 			*			memory managment.
 			*/
-			//BIOSKY_API SkyCalculations(IDateTime * dateTime, IGPS * GPS);
+			BIOSKY_API SkyCalculations(DateTime * dateTime, GPS * gps);
 
 			/**
 			* Destructor
@@ -101,46 +119,118 @@ namespace BIO
 			BIOSKY_API virtual ~SkyCalculations();
 
 			/**
+			* Calculate the position of the sun.
+			*
+			* @return Returns a SkyPosition object with the azimuth and zenith
+			*			of the sun's current position.
+			*/
+			BIOSKY_API SkyPosition CalculateSunPosition();
+
+			/**
 			* Get the date and time.
 			*
 			* @return Returns a pointer to this classes date and time object.
 			*/
-			//BIOSKY_API IDateTime * GetDateTime();
+			BIOSKY_API DateTime * GetDateTime();
 
 			/**
 			* Get the GPS coordinates.
 			*
 			* @return Returns a pointer to this classes GPS coordinates.
 			*/
-			//BIOSKY_API IGPS * GetGPS();
+			BIOSKY_API GPS * GetGPS();
 
 			/**
 			* Set the data and time object for this class.
 			*
-			* @param dateTime The IDateTime object this class will use.
+			* @param dateTime The DateTime object this class will use.
+			*
+			* @note The parameter dateTime will not be deleted by this class. 
+			*		You are responsible for any memory managment that needs to
+			*		occur.
 			*/
+			BIOSKY_API void SetDateTime(DateTime * dateTime);
+
+			/**
+			* Set the date and time for this class.
+			*
+			* @param dateTime The DateTime to set this class to.
+			*/
+			BIOSKY_API void SetDateTime(DateTime dateTime);
+
+			/**
+			* Set the GPS coordinates for this class.
+			*
+			* @param gps The GPS object this class will use.
+			*
+			* @note The parameter gps will not be deleted by this class. You 
+			*		are responsible for any memory managment that needs to 
+			*		occur.
+			*/
+			BIOSKY_API void SetGPS(GPS * gps);
+
+			/**
+			* Set the GPS coordinates for this clas.
+			*
+			* @param gps The GPS coordinates to set this class to.
+			*/
+			BIOSKY_API void SetGPS(GPS gps);
 		};
 	}//end namespace SKY
 }//end namespace BIO
 
-//inline BIO::SKY::IDateTime * BIO::SKY::SkyCalculations::GetDateTime()
-//{
-//	return _dateTime;
-//}
+inline BIO::SKY::SkyPosition BIO::SKY::SkyCalculations::CalculateSunPosition()
+{
+	return BIO::SKY::CalculateSunPosition(
+		_dateTime->GetTimeHours(),	//Time in hours
+		_dateTime->GetUTCOffset(),  //Offset from UTC-0 time
+		_dateTime->GetMonth(),		//Month of the year
+		_dateTime->GetDay(),		//Day of the month
+		_dateTime->GetYear(),		//Year
+		_gps->GetLatitudeRadians(),	//Latitude in Radians
+		_gps->GetLongitudeRadians()	//Longitude in Radians
+		);
+}
 
-//inline BIO::SKY::IGPS * BIO::SKY::SkyCalculations::GetGPS()
-//{
-//	return _gps;
-//}
+inline BIO::DateTime * BIO::SKY::SkyCalculations::GetDateTime()
+{
+	return _dateTime;
+}
 
+inline BIO::GPS * BIO::SKY::SkyCalculations::GetGPS()
+{
+	return _gps;
+}
+
+inline void BIO::SKY::SkyCalculations::SetDateTime(DateTime * dateTime)
+{
+	_deleteDateTime();
+	_dateTime = dateTime;
+}
+
+inline void BIO::SKY::SkyCalculations::SetDateTime(DateTime dateTime)
+{
+	(*_dateTime) = dateTime;
+}
+
+inline void BIO::SKY::SkyCalculations::SetGPS(GPS * gps)
+{
+	_deleteGPS();
+	_gps = gps;
+}
+
+inline void BIO::SKY::SkyCalculations::SetGPS(GPS gps)
+{
+	(*_gps) = gps;
+}
 ///////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////
 //				Private Functions
 ///////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////
-//inline BIO::SKY::SkyCalculations::SkyCalculations(const SkyCalculations & other) : _userDateTime(false), _dateTime(NULL), _userGPS(false), _gps(NULL)
-//{
-//}
+inline BIO::SKY::SkyCalculations::SkyCalculations(const SkyCalculations & other) : _userDateTime(false), _dateTime(NULL), _userGPS(false), _gps(NULL)
+{
+}
 
 inline BIO::SKY::SkyCalculations & BIO::SKY::SkyCalculations::operator = (const SkyCalculations & other)
 {

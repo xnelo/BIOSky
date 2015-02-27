@@ -15,6 +15,9 @@ IrrBIOSkyDome * dome = NULL;
 BIO::SKY::SkyPosition _staticSunPos;
 BIO::SKY::SkyPosition _staticMoonPos;
 
+BIO::DateTime _dateTime;
+BIO::GPS _gps;
+
 float DegreesToRadians(float degrees)
 {
 	return degrees * (BIO::MATH::PIf / 180.0f);
@@ -64,6 +67,130 @@ irr::gui::IGUIEditBox * zenith;
 irr::gui::IGUIEditBox * moonAzimuth;
 irr::gui::IGUIEditBox * moonZenith;
 
+
+bool isLeapYear(unsigned int year)
+{
+	if ((year % 4) == 0)
+	{//it is divisible by 4
+		if ((year % 100) == 0)
+		{//it is divisible by 100
+			if ((year % 400) == 0)
+			{//it is divisible by 400
+				return true;
+			}
+		}
+		else
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
+int daysInMonth(int month, unsigned int year)
+{
+	switch (month)
+	{
+	case 2:
+		if (isLeapYear(year))
+			return 29;
+		return 28;
+	case 4:
+	case 6:
+	case 9:
+	case 11:
+		return 30;
+	default:
+		return 31;
+	}
+}
+
+void setDate()
+{
+	//get the date information
+	int monthVal = month->getItemData(month->getSelected());
+	int dayVal = day->getItemData(day->getSelected());
+	int yearVal = (int)wcstol(year->getText(), NULL, 10);
+
+	if (dayVal > daysInMonth(monthVal, yearVal))
+	{
+		dayVal = daysInMonth(monthVal, yearVal);
+		day->setSelected(dayVal - 1);
+	}
+	std::cout << "Setting Date: " << monthVal << "/" << dayVal << "/" << yearVal << std::endl;
+
+	_dateTime.SetMonth(BIO::Date::IntToMonth(monthVal));
+	_dateTime.SetDay(dayVal);
+	_dateTime.SetYear(yearVal);
+
+	if (sky)
+	{
+		sky->UpdateSunPosition();
+		sky->UpdateMoonPosition();
+		sky->UpdateSkyColor();
+	}
+}
+
+void setTime()
+{
+	//get the information
+	int hourVal = (int)wcstol(hour->getText(), NULL, 10);
+	int minVal = (int)wcstol(min->getText(), NULL, 10);
+	int secVal = (int)wcstol(sec->getText(), NULL, 10);
+
+	if (secVal >= 60)
+	{
+		secVal = 0;
+		sec->setText(L"00");
+	}
+
+	if (minVal >= 60)
+	{
+		minVal = 0;
+		min->setText(L"00");
+	}
+
+	if (hourVal >= 24)
+	{
+		hourVal = 0;
+		hour->setText(L"00");
+	}
+
+	float hours = hourVal + ((float)minVal / 60.0f) + ((float)secVal / 3600);
+	_dateTime.SetTimeHours(hours);
+
+	if (sky)
+	{
+		sky->UpdateSunPosition();
+		sky->UpdateMoonPosition();
+		sky->UpdateSkyColor();
+	}
+}
+
+void setGPS()
+{
+	float latitude = wcstof(lat->getText(), NULL);
+	float longitud = wcstof(longitude->getText(), NULL);
+
+	if (south->isChecked())
+		latitude *= -1;
+
+	if (west->isChecked())
+		longitud *= -1;
+
+	std::cout << "Setting GPS: " << latitude << " | " << longitud << std::endl;
+
+	_gps.SetLatitude(latitude);
+	_gps.SetLongitude(longitud);
+
+	if (sky)
+	{
+		sky->UpdateSunPosition();
+		sky->UpdateMoonPosition();
+		sky->UpdateSkyColor();
+	}
+}
 
 void deleteSky()
 {
@@ -123,6 +250,8 @@ void enableDynamicSky()
 	enableStatic(false);
 	staticSky->setChecked(false);
 	calcSky->setChecked(false);
+	
+	deleteSky();
 }
 
 void enableCalculatedSky()
@@ -132,45 +261,15 @@ void enableCalculatedSky()
 	enableStatic(false);
 	dynamicSky->setChecked(false);
 	staticSky->setChecked(false);
+
+	deleteSky();
+	setTime();
+	setDate();
+	setGPS();
+	sky = new BIO::SKY::SkyStaticCalculated(dome, &_dateTime, &_gps);
 }
 
-bool isLeapYear(unsigned int year)
-{
-	if ((year % 4) == 0)
-	{//it is divisible by 4
-		if ((year % 100) == 0)
-		{//it is divisible by 100
-			if ((year % 400) == 0)
-			{//it is divisible by 400
-				return true;
-			}
-		}
-		else
-		{
-			return true;
-		}
-	}
 
-	return false;
-}
-
-int daysInMonth(int month, unsigned int year)
-{
-	switch (month)
-	{
-	case 2:
-		if (isLeapYear(year))
-			return 29;
-		return 28;
-	case 4:
-	case 6:
-	case 9:
-	case 11:
-		return 30;
-	default:
-		return 31;
-	}
-}
 
 bool checkFloatNumber(const wchar_t * str)
 {
@@ -209,35 +308,6 @@ bool checkNumber(const wchar_t * str)
 			return false;
 	}
 	return true;
-}
-
-void setDate()
-{
-	//get the date information
-	int monthVal = month->getItemData(month->getSelected());
-	int dayVal = day->getItemData(day->getSelected());
-	int yearVal = (int)wcstol(year->getText(), NULL, 10);
-
-	if (dayVal > daysInMonth(monthVal, yearVal))
-	{
-		dayVal = daysInMonth(monthVal, yearVal);
-		day->setSelected(dayVal - 1);
-	}
-	std::cout << "Setting Date: " << monthVal << "/" << dayVal << "/" << yearVal << std::endl;
-}
-
-void setGPS()
-{
-	float latitude = wcstof(lat->getText(), NULL);
-	float longitud = wcstof(longitude->getText(), NULL);
-
-	if (south->isChecked())
-		latitude *= -1;
-
-	if (west->isChecked())
-		longitud *= -1;
-
-	std::cout << "Setting GPS: " << latitude << " | " << longitud << std::endl;
 }
 
 void setStaticSky()
@@ -540,6 +610,21 @@ bool DefaultEventReceiver::handleGUI(const irr::SEvent& event)
 			if (wcstof(moonZenith->getText(), NULL) > 180.0f)
 				moonZenith->setText(L"100");
 			setStaticSky();
+			return true;
+		case HOUR_EDIT:
+			if (!checkNumber(hour->getText()))
+				hour->setText(L"4");
+			setTime();
+			return true;
+		case MIN_EDIT:
+			if (!checkNumber(min->getText()))
+				min->setText(L"30");
+			setTime();
+			return true;
+		case SEC_EDIT:
+			if (!checkNumber(sec->getText()))
+				sec->setText(L"00");
+			setTime();
 			return true;
 		default:
 			return false;

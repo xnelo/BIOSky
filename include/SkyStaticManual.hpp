@@ -63,12 +63,12 @@ namespace BIO
 			*
 			* @param moonZenith The zenith of the moon.
 			*/
-			BIOSKY_API SkyStaticManual(IDomeGeometry * skydome, float sunAzimuth, float sunZenith, float moonAzimuth, float moonZenith);
+			SkyStaticManual(IDomeGeometry * skydome, float sunAzimuth, float sunZenith, float moonAzimuth, float moonZenith);
 
 			/**
 			* Destructor
 			*/
-			BIOSKY_API virtual ~SkyStaticManual();
+			virtual ~SkyStaticManual();
 		};
 	}//end namespace SKY
 }//end namespace BIO

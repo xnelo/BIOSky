@@ -78,7 +78,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="include\BIOSky.hpp" />
+    <ClInclude Include="include\BIOSkyFunctions.hpp" />
     <ClInclude Include="include\CompileConfig.h" />
+    <ClInclude Include="include\Date.hpp" />
+    <ClInclude Include="include\DateTime.hpp" />
     <ClInclude Include="include\Error.hpp" />
     <ClInclude Include="include\GPS.hpp" />
     <ClInclude Include="include\ISky.hpp" />
@@ -97,6 +100,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="source\BIOSky.cpp" />
+    <ClCompile Include="source\Date.cpp" />
+    <ClCompile Include="source\DateTime.cpp" />
     <ClCompile Include="source\GPS.cpp" />
     <ClCompile Include="source\SkyCalculations.cpp" />
     <ClCompile Include="source\SkyStaticCalculated.cpp" />

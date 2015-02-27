@@ -34,16 +34,16 @@
 */
 
 #include "SkyCalculations.hpp"
-/*
+
 namespace BIO
 {
 	namespace SKY
 	{
-		SkyCalculations::SkyCalculations(IDateTime * dateTime, IGPS * GPS) : _userDateTime(false), _dateTime(NULL), _userGPS(false), _gps(NULL)
+		SkyCalculations::SkyCalculations(DateTime * dateTime, GPS * gps) : _userDateTime(false), _dateTime(NULL), _userGPS(false), _gps(NULL)
 		{
 			if (dateTime == NULL)
 			{
-				//_dateTime = new ;
+				_dateTime = new DateTime();
 				_userDateTime = false;
 			}
 			else
@@ -52,21 +52,21 @@ namespace BIO
 				_userDateTime = true;
 			}
 
-			if (GPS == NULL)
+			if (gps == NULL)
 			{
-				//_gps = new;
+				_gps = new GPS();
 				_userDateTime = false;
 			}
 			else
 			{
-				_gps = GPS;
+				_gps = gps;
 				_userGPS = true;
 			}
 		}
 
 		SkyCalculations::~SkyCalculations()
 		{
-			_clear();
+			_delete();
 		}
 
 		///////////////////////////////////////////////////////////////////
@@ -74,14 +74,24 @@ namespace BIO
 		//				Private Functions
 		///////////////////////////////////////////////////////////////////
 		///////////////////////////////////////////////////////////////////
-		void SkyCalculations::_clear()
+		void SkyCalculations::_delete()
+		{
+			_deleteDateTime();
+
+			_deleteGPS();
+		}
+
+		void SkyCalculations::_deleteDateTime()
 		{
 			if ((_userDateTime == false) && (_dateTime != NULL))
 				delete _dateTime;
 
 			_dateTime = NULL;
 			_userDateTime = false;
+		}
 
+		void SkyCalculations::_deleteGPS()
+		{
 			if ((_userGPS == false) && (_gps != NULL))
 				delete _gps;
 
@@ -93,5 +103,5 @@ namespace BIO
 		///////////////////////////////////////////////////////////////////
 	}//end namespace SKY
 }//end namespace BIO
-//*/
+
 

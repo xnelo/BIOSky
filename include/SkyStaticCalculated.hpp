@@ -39,6 +39,7 @@
 
 #include "CompileConfig.h"
 #include "SkyStatic.hpp"
+#include "SkyCalculations.hpp"
 
 namespace BIO
 {
@@ -49,7 +50,7 @@ namespace BIO
 		* calculate sun and moon position based on time, date, and position on
 		* the earth.
 		*/
-		class SkyStaticCalculated : public SkyStatic
+		class SkyStaticCalculated : public SkyStatic, public SkyCalculations
 		{
 		public:
 			/**
@@ -58,14 +59,38 @@ namespace BIO
 			* @param geometry A pointer to the geometry class that renders the 
 			*			skydome.
 			*/
-			BIOSKY_API SkyStaticCalculated(IDomeGeometry * geometry);
+			BIOSKY_API SkyStaticCalculated(IDomeGeometry * geometry, DateTime * dateTime, GPS * gps);
 
 			/**
 			* Destructor
 			*/
 			BIOSKY_API virtual ~SkyStaticCalculated();
+
+			/**
+			* Update the Moon's position with the current parameters.
+			*
+			* @note This function should NOT be called every frame.
+			*/
+			BIOSKY_API virtual void UpdateMoonPosition();
+
+			/**
+			* Update the SunPosition with the current parameters.
+			*
+			* @note This function should NOT be called every frame.
+			*/
+			BIOSKY_API virtual void UpdateSunPosition();
 		};
 	}//end namespace SKY
 }//end namespace BIO
+
+inline void BIO::SKY::SkyStaticCalculated::UpdateMoonPosition()
+{
+
+}
+
+inline void BIO::SKY::SkyStaticCalculated::UpdateSunPosition()
+{
+	SetSunPosition(CalculateSunPosition());
+}
 
 #endif //___BIOSKY_SKYSTATICCALCULATED_HPP__2015___

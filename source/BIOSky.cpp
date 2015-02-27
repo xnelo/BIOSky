@@ -33,7 +33,8 @@
 * This liscense can also be found at: http://opensource.org/licenses/Zlib
 */
 
-#include "BIOSky.hpp"
+#include "BIOSkyFunctions.hpp"
+#include "MathUtils.hpp"
 
 #include "../source/MoonTexture.c"
 
@@ -41,6 +42,92 @@ namespace BIO
 {
 	namespace SKY
 	{
+		SkyPosition CalculateSunPosition(float standardTime, float UTCoffset, DATE_MONTH month, unsigned int day, unsigned int year, float latitude, float longitude)
+		{
+			//Method from http://www.stjarnhimlen.se/comp/ppcomp.html
+			// by: Paul Schlyter, Stockholm, Sweden
+			int monthint = Date::MonthToInt(month);
+			float UT = standardTime - UTCoffset;	// universal time
+
+			float d = (float)(367 * (int)year - (7 * ((int)year + ((monthint + 9) / 12))) / 4 + (275 * monthint) / 9 + (int)day - 730530);
+			d = d + (UT / 24.0f);
+
+			float w = MATH::RevolutionReductionDegrees(282.9404f + 4.70935E-5f   * d); //in degrees (longitude of perihelion)
+			float a = 1.000000f;//mean distance in a.u.
+			float e = 0.016709f - 1.151E-9f * d; //(eccentricity)
+			float M = MATH::RevolutionReductionDegrees(356.0470f + 0.9856002585f * d);//in degrees (mean anomaly)
+
+			float oblecl = MATH::RevolutionReductionDegrees(23.4393f - 3.563E-7f * d);//in degrees
+			float L = MATH::RevolutionReductionDegrees(w + M);//mean longitude in degrees
+
+			float E = M + (180 / MATH::PIf) * e * sin(M * MATH::DegreesToRadiansf) * (1 + e * cos(M*MATH::DegreesToRadiansf));//in degrees
+			E = MATH::RevolutionReductionDegrees(E);
+			//BIO_LOG_CRITICAL("E: " << E);
+
+			float x = cos(E * MATH::DegreesToRadiansf) - e;
+			float y = sin(E * MATH::DegreesToRadiansf) * sqrt(1 - e*e);
+
+			//BIO_LOG_CRITICAL("x: " << x << " y: " << y);
+
+			float r = sqrt(x*x + y*y);
+			float v = atan2(y, x) * MATH::RadiansToDegreesf;//in degrees
+
+			//BIO_LOG_CRITICAL("r: " << r << " v: " << v);
+
+			float lon = MATH::RevolutionReductionDegrees(v + w);//longitude of sun in degrees
+
+			//BIO_LOG_CRITICAL("long: " << lon);
+
+			x = r * cos(lon * MATH::DegreesToRadiansf);
+			y = r * sin(lon * MATH::DegreesToRadiansf);
+			float z = 0.0;//sun is always zero
+
+			//BIO_LOG_CRITICAL("x: " << x << " y: " << y << " z: " << z);
+
+			float xequat = x;
+			float yequat = y * cos(23.4406f * MATH::DegreesToRadiansf) - z * sin(23.4406f * MATH::DegreesToRadiansf);
+			float zequat = y * sin(23.4406f * MATH::DegreesToRadiansf) + z * cos(23.4406f * MATH::DegreesToRadiansf);
+
+			//BIO_LOG_CRITICAL("xequat: " << xequat << " yequat: " << yequat << " zequat: " << zequat);
+
+			float RA = atan2(yequat, xequat) * MATH::RadiansToDegreesf; //In Degrees 
+			float Dec = atan2(zequat, sqrt(xequat*xequat + yequat*yequat)) * MATH::RadiansToDegreesf;//in Degrees
+
+			//BIO_LOG_CRITICAL("RA: " << RA << " Dec: " << Dec);
+
+			float GMST0 = (L / 15.0f) + 12.0f;//in hours
+			//float GMST = GMST0 + UT;//in hours
+
+			//BIO_LOG_CRITICAL("GMST0: " << GMST0);
+
+			float SIDTIME = GMST0 + UT + (longitude * MATH::RadiansToDegreesf) / 15.0f;
+
+			//BIO_LOG_CRITICAL("SidTime: " << SIDTIME);
+
+			float HA = (SIDTIME * 15.0f) - RA;//ha is in degrees
+
+			//BIO_LOG_CRITICAL("HA: " << HA);
+
+			x = cos(HA * MATH::DegreesToRadiansf) * cos(Dec * MATH::DegreesToRadiansf);
+			y = sin(HA * MATH::DegreesToRadiansf) * cos(Dec * MATH::DegreesToRadiansf);
+			z = sin(Dec * MATH::DegreesToRadiansf);
+
+			//BIO_LOG_CRITICAL("x: " << x << " y: " << y << " z: " << z);
+
+			float xhor = x * sin(latitude) - z * cos(latitude);
+			float yhor = y;
+			float zhor = x * cos(latitude) + z * sin(latitude);
+
+			//BIO_LOG_CRITICAL("xhor: " << xhor << " yhor: " << yhor << " zhor: " << zhor);
+
+			float azimuth = atan2(yhor, xhor) + MATH::PIf;
+			float altitude = asin(zhor);//atan2(zhor, sqrt(xhor*xhor + yhor*yhor));
+
+			//BIO_LOG_CRITICAL("azimuth: " << azimuth* MATH::BIO_180_PIf << " altitude: " << altitude* MATH::BIO_180_PIf);
+
+			return SkyPosition(azimuth,MATH::PId2f - altitude);
+		}
+
 		RawGeometry * CreateSkyDomeGeometry(float radius, int numVerticalSegments, int numHorozontalSegments)
 		{
 			RawGeometry * rtnValue = new RawGeometry();

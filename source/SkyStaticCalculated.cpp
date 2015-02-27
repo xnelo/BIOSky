@@ -39,9 +39,16 @@ namespace BIO
 {
 	namespace SKY
 	{
-		SkyStaticCalculated::SkyStaticCalculated(IDomeGeometry * geometry) :
-			SkyStatic(geometry)
-		{}
+		SkyStaticCalculated::SkyStaticCalculated(IDomeGeometry * geometry, DateTime * dateTime, GPS * gps) :
+			SkyStatic(geometry),
+			SkyCalculations(dateTime, gps)
+		{
+			UpdateSunPosition();
+
+			UpdateMoonPosition();
+
+			UpdateSkyColor();
+		}
 
 		SkyStaticCalculated::~SkyStaticCalculated()
 		{}

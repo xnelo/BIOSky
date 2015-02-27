@@ -79,6 +79,20 @@ namespace BIO
 			*			Update function.
 			*/
 			BIOSKY_API virtual void Update(float deltaTime);
+
+			/**
+			* Update the Moon's position with the current parameters.
+			*
+			* @note This function should NOT be called every frame.
+			*/
+			BIOSKY_API virtual void UpdateMoonPosition();
+
+			/**
+			* Update the SunPosition with the current parameters.
+			*
+			* @note This function should NOT be called every frame.
+			*/
+			BIOSKY_API virtual void UpdateSunPosition();
 		};
 	}//end namespace SKY
 }//end namespace BIO
@@ -95,6 +109,16 @@ inline void BIO::SKY::SkyStatic::Update()
 }
 
 inline void BIO::SKY::SkyStatic::Update(float deltaTime)
+{
+	/*DO NOTHING*/
+}
+
+inline void BIO::SKY::SkyStatic::UpdateMoonPosition()
+{
+	/*DO NOTHING*/
+}
+
+inline void BIO::SKY::SkyStatic::UpdateSunPosition()
 {
 	/*DO NOTHING*/
 }
