@@ -102,6 +102,11 @@ namespace BIO
 			virtual void SetMoonPosition(float unitX, float unitY, float unitZ) = 0;
 
 			/**
+			* Set the rotation of the Stars.
+			*/
+			virtual void SetStarRotation(float x, float y, float z) = 0;
+
+			/**
 			* Set Position of the sun.
 			*
 			* @param unitX The unit x position of the sun. This is the position 

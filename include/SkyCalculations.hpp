@@ -119,6 +119,17 @@ namespace BIO
 			BIOSKY_API virtual ~SkyCalculations();
 
 			/**
+			* Calculate the position of the moon.
+			*
+			* @return Returns a SkyPosition object with the azimuth and the 
+			*			zenith of the moon's current position.
+			*/
+			BIOSKY_API SkyPosition CalculateMoonPosition();
+
+			BIOSKY_API float CalculateCelestialNorthZenith();
+			BIOSKY_API float CalculateStarRotation();
+
+			/**
 			* Calculate the position of the sun.
 			*
 			* @return Returns a SkyPosition object with the azimuth and zenith
@@ -178,6 +189,29 @@ namespace BIO
 		};
 	}//end namespace SKY
 }//end namespace BIO
+
+inline BIO::SKY::SkyPosition BIO::SKY::SkyCalculations::CalculateMoonPosition()
+{
+	return BIO::SKY::CalculateMoonPosition(
+		_dateTime->GetTimeHours(),	//Time in hours
+		_dateTime->GetUTCOffset(),  //Offset from UTC-0 time
+		_dateTime->GetMonth(),		//Month of the year
+		_dateTime->GetDay(),		//Day of the month
+		_dateTime->GetYear(),		//Year
+		_gps->GetLatitudeRadians(),	//Latitude in Radians
+		_gps->GetLongitudeRadians()	//Longitude in Radians
+		);
+}
+
+inline float BIO::SKY::SkyCalculations::CalculateCelestialNorthZenith()
+{
+	return BIO::SKY::CalculateCelestialNorthPoleZenith(_gps->GetLatitudeRadians());
+}
+
+inline float BIO::SKY::SkyCalculations::CalculateStarRotation()
+{
+	return BIO::SKY::CalculateStarRotation(_dateTime->GetTimeHours(), _dateTime->GetUTCOffset());
+}
 
 inline BIO::SKY::SkyPosition BIO::SKY::SkyCalculations::CalculateSunPosition()
 {

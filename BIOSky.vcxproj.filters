@@ -75,11 +75,14 @@
     <ClInclude Include="include\BIOSkyFunctions.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\SkyDynamic.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\lodepng.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="source\MoonTexture.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="source\SkyStaticCalculated.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -99,6 +102,18 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\DateTime.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\SkyDynamic.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\lodepng.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\NightSky_C.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\MoonTexture.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

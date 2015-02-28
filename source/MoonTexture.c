@@ -7,7 +7,7 @@ static const struct {
 	unsigned int 	 bytes_per_pixel; /* 2:RGB16, 3:RGB, 4:RGBA */
 	char         	*comment;
 	unsigned char	 pixel_data[256 * 256 * 4];
-} imageData 
+} moonImageData 
 //*
 = {
 256, 256, 4,

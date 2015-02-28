@@ -79,6 +79,8 @@ inline BIO::SKY::SkyStaticManual::SkyStaticManual(IDomeGeometry * skydome, float
 
 	SetMoonPosition(moonAzimuth, moonZenith);
 
+	//SetStarPosition(.855f, .785f);
+
 	UpdateSkyColor();
 }
 

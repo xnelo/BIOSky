@@ -154,6 +154,15 @@ protected:
 
 	/**A pointer to the vertex data needed by the library.*/
 	IrrBIOSkyDomeVertecies * _vertData;
+
+	/**Mesh buffer that holds the geometry for the night sky.*/
+	irr::scene::IMeshBuffer * _nightGeometry;
+	/**The material for the night dome*/
+	irr::video::SMaterial _nightMaterial;
+	/**The texture for the night sky*/
+	irr::video::ITexture * _nightTexture;
+	/**The transformation for the stars. This is mostly rotation.*/
+	irr::core::matrix4 _starTransformations;
 public: 
 	/**
 	* Constructor
@@ -231,6 +240,11 @@ public:
 	*			radius of the dome.
 	*/
 	virtual void SetMoonPosition(float unitX, float unitY, float unitZ);
+
+	/**
+	* Set the rotation of the Stars.
+	*/
+	virtual void SetStarRotation(float x, float y, float z);
 
 	/**
 	* Set Position of the sun.

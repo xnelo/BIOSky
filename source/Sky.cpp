@@ -64,6 +64,11 @@ namespace BIO
 			_skydome->SetMoonPosition(x, y, z);
 		}
 
+		void Sky::SetStarPosition(float zenith, float rotation)
+		{
+			_skydome->SetStarRotation(zenith, rotation, 0);
+		}
+
 		void Sky::SetSunPosition(float SolarAzimuth, float SolarZenith)
 		{
 			_sunPos.Azimuth = SolarAzimuth;
@@ -102,6 +107,7 @@ namespace BIO
 
 
 			//irr::video::S3DVertex * verts = (irr::video::S3DVertex *)_skydome->getMesh()->getMeshBuffer(0)->getVertices();
+			_skydome->LockGeometry();
 			IDomeVertecies * verts = _skydome->GetVertecies();
 			for (int i = 0; i < verts->GetVertexCount(); i++)
 			{
@@ -123,6 +129,8 @@ namespace BIO
 				//verts[i].Color.set(alpha, rgb.red * 255, rgb.green * 255, rgb.blue * 255);
 				verts->SetVertexColor(i, alpha, (int)(rgb.red * 255), (int)(rgb.green * 255), (int)(rgb.blue * 255));
 			}
+
+			_skydome->UnlockGeometry();
 		}
 
 		///////////////////////////////////////////////////////////////////////

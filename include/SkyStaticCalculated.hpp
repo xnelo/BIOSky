@@ -58,6 +58,16 @@ namespace BIO
 			*
 			* @param geometry A pointer to the geometry class that renders the 
 			*			skydome.
+			*
+			* @param dateTime A pointer to the DateTime object that keeps track 
+			*			of the current time. This allows for the user to update
+			*			the date and time in his own application and it is 
+			*			automatically updated in the library.
+			*
+			* @param gps A pointer to the GPS object the keeps track of the 
+			*			current GPS location. This allows the user to update
+			*			the GPS location in his own application and it is 
+			*			automatically updated in the library.
 			*/
 			BIOSKY_API SkyStaticCalculated(IDomeGeometry * geometry, DateTime * dateTime, GPS * gps);
 
@@ -73,6 +83,9 @@ namespace BIO
 			*/
 			BIOSKY_API virtual void UpdateMoonPosition();
 
+			BIOSKY_API virtual void UpdateStarPosition();
+			BIOSKY_API virtual void UpdateStarRotation();
+
 			/**
 			* Update the SunPosition with the current parameters.
 			*
@@ -85,7 +98,17 @@ namespace BIO
 
 inline void BIO::SKY::SkyStaticCalculated::UpdateMoonPosition()
 {
+	SetMoonPosition(CalculateMoonPosition());
+}
 
+inline void BIO::SKY::SkyStaticCalculated::UpdateStarPosition()
+{
+	SetStarPosition(CalculateCelestialNorthZenith(), CalculateStarRotation());
+}
+
+inline void BIO::SKY::SkyStaticCalculated::UpdateStarRotation()
+{
+	SetStarPosition(CalculateCelestialNorthZenith(), CalculateStarRotation());
 }
 
 inline void BIO::SKY::SkyStaticCalculated::UpdateSunPosition()

@@ -1,3 +1,7 @@
+//visual leak detector
+//#include <vld.h>
+//#pragma comment(lib, "vld")
+
 #include <iostream>
 #include <cwchar>//needed for wcstol, wcstof, wsclen
 
@@ -17,6 +21,9 @@ BIO::SKY::SkyPosition _staticMoonPos;
 
 BIO::DateTime _dateTime;
 BIO::GPS _gps;
+
+bool runTime = false;
+float timeSpeed = 1.0f;
 
 float DegreesToRadians(float degrees)
 {
@@ -44,7 +51,10 @@ enum GUI_IDS
 	AZIMUTH_EDIT,
 	ZENITH_EDIT,
 	MOON_AZIMUTH_EDIT,
-	MOON_ZENITH_EDIT
+	MOON_ZENITH_EDIT,
+	SIM_SPEED_SCROLL,
+	SIM_SPEED_TEXT,
+	SEC_TO_HOURS_CHECK
 };
 
 irr::gui::IGUIComboBox * month;
@@ -66,6 +76,10 @@ irr::gui::IGUIEditBox * azimuth;
 irr::gui::IGUIEditBox * zenith;
 irr::gui::IGUIEditBox * moonAzimuth;
 irr::gui::IGUIEditBox * moonZenith;
+irr::gui::IGUIScrollBar * simSpeed;
+irr::gui::IGUIStaticText * simSpeedText;
+irr::gui::IGUIStaticText * simSpeedUnits;
+irr::gui::IGUICheckBox * secToMin;
 
 
 bool isLeapYear(unsigned int year)
@@ -220,6 +234,10 @@ void enableTimer(bool enabled)
 {
 	startTime->setEnabled(enabled);
 	stopTime->setEnabled(enabled);
+	simSpeed->setEnabled(enabled);
+	simSpeedText->setEnabled(enabled);
+	simSpeedUnits->setEnabled(enabled);
+	secToMin->setEnabled(enabled);
 }
 
 void enableStatic(bool enabled)
@@ -252,6 +270,10 @@ void enableDynamicSky()
 	calcSky->setChecked(false);
 	
 	deleteSky();
+	setTime();
+	setDate();
+	setGPS();
+	sky = new BIO::SKY::SkyDynamic(dome, &_dateTime, &_gps);
 }
 
 void enableCalculatedSky()
@@ -323,6 +345,44 @@ void setStaticSky()
 		sky->SetMoonPosition(_staticMoonPos.Azimuth, _staticMoonPos.Zenith);
 		sky->UpdateSkyColor();
 	}
+}
+
+void updateTime(float deltaSeconds)
+{
+	_dateTime.AddTime(deltaSeconds * timeSpeed);
+
+	//set all the time things again.
+	month->setSelected(BIO::Date::MonthToInt(_dateTime.GetMonth()) - 1);
+	day->setSelected(_dateTime.GetDay() - 1);
+
+	year->setText(std::to_wstring(_dateTime.GetYear()).c_str());
+
+	float timeHours = _dateTime.GetTimeHours();
+	int outHours = (int)timeHours;
+	timeHours -= outHours;
+	timeHours *= 60;//num of minutes
+	int outMin = (int)timeHours;
+	timeHours -= outMin;
+	timeHours *= 60;//num of seconds
+	int outSec = (int)timeHours;
+
+	hour->setText(std::to_wstring(outHours).c_str());
+	min->setText(std::to_wstring(outMin).c_str());
+	sec->setText(std::to_wstring(outSec).c_str());
+}
+
+void changeSimulationSpeed()
+{
+	float tmpVal = (float)simSpeed->getPos();
+	tmpVal /= 10.0f;
+
+	std::wstring output = std::to_wstring(tmpVal);
+
+	simSpeedText->setText(output.c_str());
+
+	timeSpeed = tmpVal;
+	if (secToMin->isChecked())
+		timeSpeed *= 60;
 }
 
 
@@ -561,15 +621,23 @@ bool DefaultEventReceiver::handleGUI(const irr::SEvent& event)
 
 	switch (event.GUIEvent.EventType)
 	{
+	case irr::gui::EGET_SCROLL_BAR_CHANGED:
+		if (id == SIM_SPEED_SCROLL)
+		{
+			changeSimulationSpeed();
+			return true;
+		}
 	case irr::gui::EGET_EDITBOX_CHANGED:
 		switch (id)
 		{
 		case YEAR_EDIT:
+			runTime = false;
 			if (!checkNumber(year->getText()))
 				year->setText(L"2003");
 			setDate();
 			return true;
 		case LAT_EDIT:
+			runTime = false;
 			if (!checkFloatNumber(lat->getText()))
 				lat->setText(L"41");
 			if (wcstof(lat->getText(), NULL) > 90.0f)
@@ -577,6 +645,7 @@ bool DefaultEventReceiver::handleGUI(const irr::SEvent& event)
 			setGPS();
 			return true;
 		case LONGITUDE_EDIT:
+			runTime = false;
 			if (!checkFloatNumber(longitude->getText()))
 				longitude->setText(L"112");
 			if (wcstof(longitude->getText(), NULL) > 180.0f)
@@ -612,16 +681,19 @@ bool DefaultEventReceiver::handleGUI(const irr::SEvent& event)
 			setStaticSky();
 			return true;
 		case HOUR_EDIT:
+			runTime = false;
 			if (!checkNumber(hour->getText()))
 				hour->setText(L"4");
 			setTime();
 			return true;
 		case MIN_EDIT:
+			runTime = false;
 			if (!checkNumber(min->getText()))
 				min->setText(L"30");
 			setTime();
 			return true;
 		case SEC_EDIT:
+			runTime = false;
 			if (!checkNumber(sec->getText()))
 				sec->setText(L"00");
 			setTime();
@@ -634,9 +706,11 @@ bool DefaultEventReceiver::handleGUI(const irr::SEvent& event)
 		switch (id)
 		{
 		case MONTH_CBO_BOX:
+			runTime = false;
 			setDate();
 			return true;
 		case DAY_CBO_BOX:
+			runTime = false;
 			setDate();
 			return true;
 		default:
@@ -647,9 +721,11 @@ bool DefaultEventReceiver::handleGUI(const irr::SEvent& event)
 		{
 		case START_TIME_BUTTON:
 			std::cout << "Start Timer" << std::endl;
+			runTime = true;
 			return true;
 		case STOP_TIME_BUTTON:
 			std::cout << "Stop Timer" << std::endl;
+			runTime = false;
 			return true;
 		default:
 			return false;
@@ -657,25 +733,41 @@ bool DefaultEventReceiver::handleGUI(const irr::SEvent& event)
 	case irr::gui::EGET_CHECKBOX_CHANGED:
 		switch (id)
 		{
+		case SEC_TO_HOURS_CHECK:
+			if (secToMin->isChecked())
+			{
+				simSpeedUnits->setText(L"1 Sec =             mins");
+			}
+			else
+			{
+				simSpeedUnits->setText(L"1 Sec =             seconds");
+			}
+			changeSimulationSpeed();
+			return true;
 		case STATIC_SKY_CHECK:
+			runTime = false;
 			if ((calcSky->isChecked() == false) && (dynamicSky->isChecked() == false))
 				staticSky->setChecked(true);
 			enableStaticSky();
 			return true;
 		case CALC_SKY_CHECK:
+			runTime = false;
 			if ((staticSky->isChecked() == false) && (dynamicSky->isChecked() == false))
 				calcSky->setChecked(true);
 			enableCalculatedSky();
 			return true;
 		case DYNAMIC_SKY_CHECK:
+			runTime = false;
 			if ((calcSky->isChecked() == false) && (staticSky->isChecked() == false))
 				dynamicSky->setChecked(true);
 			enableDynamicSky();
 			return true;
 		case SOUTH_CHECK:
+			runTime = false;
 			setGPS();
 			return true;
 		case WEST_CHECK:
+			runTime = false;
 			setGPS();
 			return true;
 		default:
@@ -842,27 +934,35 @@ int Init(irr::IrrlichtDevice * dev, DefaultEventReceiver * eventReciever)
 	longitude = gui->addEditBox(L"112", irr::core::recti(180, 50, 210, 70), true, main, LONGITUDE_EDIT);
 	west = gui->addCheckBox(true, irr::core::recti(215, 50, 270, 70), main, WEST_CHECK, L"West");
 
-	startTime = gui->addButton(irr::core::recti(15, 75, 85, 95), main, START_TIME_BUTTON, L"Start Time");
-	stopTime = gui->addButton(irr::core::recti(90, 75, 160, 95), main, STOP_TIME_BUTTON, L"Stop Time");
+	startTime = gui->addButton(irr::core::recti(5, 75, 65, 95), main, START_TIME_BUTTON, L"Start Time");
+	stopTime = gui->addButton(irr::core::recti(70, 75, 130, 95), main, STOP_TIME_BUTTON, L"Stop Time");
 
-	gui->addStaticText(L"Sky Type: ", irr::core::recti(5, 100, 100, 120), false, false, main);
+	gui->addStaticText(L"Sim Speed:", irr::core::recti(135, 75, 170, 95), false, true, main);
+	simSpeed = gui->addScrollBar(true, irr::core::recti(165, 75, 285, 95), main, SIM_SPEED_SCROLL);
+	simSpeed->setMin(10);
+	simSpeed->setMax(10000);
+	simSpeedUnits = gui->addStaticText(L"1 Sec =             seconds", irr::core::recti(135, 105, 220, 130), false, false, main);
+	simSpeedText = gui->addStaticText(L"1.0", irr::core::recti(160, 105, 185, 130), false, false, main, SIM_SPEED_TEXT);
 
-	staticSky = gui->addCheckBox(true, irr::core::recti(5, 125, 100, 145), main, STATIC_SKY_CHECK, L"Static Sky");
-	calcSky = gui->addCheckBox(false, irr::core::recti(105, 125, 200, 145), main, CALC_SKY_CHECK, L"Calculated Sky");
-	dynamicSky = gui->addCheckBox(false, irr::core::recti(205, 125, 300, 145), main, DYNAMIC_SKY_CHECK, L"Dynamic Sky");
+	secToMin = gui->addCheckBox(false, irr::core::recti(225, 100, 280, 120), main, SEC_TO_HOURS_CHECK, L"Minutes");
 
-	gui->addStaticText(L"Azimuth: ", irr::core::recti(5, 150, 50, 170), false, false, main);
-	azimuth = gui->addEditBox(L"45", irr::core::recti(55, 150, 105, 170), true, main, AZIMUTH_EDIT);
-	gui->addStaticText(L"Moon Azimuth: ", irr::core::recti(115, 150, 170, 170), false, false, main);
-	moonAzimuth = gui->addEditBox(L"100", irr::core::recti(180, 150, 230, 170), true, main, MOON_AZIMUTH_EDIT);
-	gui->addStaticText(L"Zenith: ", irr::core::recti(5, 175, 50, 195), false, false, main);
-	zenith = gui->addEditBox(L"45", irr::core::recti(55, 175, 105, 195), true, main, ZENITH_EDIT);
-	gui->addStaticText(L"Moon Zenith: ", irr::core::recti(115, 175, 170, 195), false, false, main);
-	moonZenith = gui->addEditBox(L"100", irr::core::recti(180, 175, 230, 195), true, main, MOON_ZENITH_EDIT);
-	//irr::gui::IGUITabControl * tabs = gui->addTabControl(irr::core::recti(5, 20, 100, 100), main);
+	int offset = 25;
 
-	//irr::gui::IGUITab * staticTab = tabs->addTab(L"Static");
-	//irr::gui::IGUITab * dynamicTab = tabs->addTab(L"Dynamic");
+	gui->addStaticText(L"Sky Type: ", irr::core::recti(5, 100 + offset, 100, 120 + offset), false, false, main);
+
+	staticSky = gui->addCheckBox(true, irr::core::recti(5, 125 + offset, 100, 145 + offset), main, STATIC_SKY_CHECK, L"Static Sky");
+	calcSky = gui->addCheckBox(false, irr::core::recti(105, 125 + offset, 200, 145 + offset), main, CALC_SKY_CHECK, L"Calculated Sky");
+	dynamicSky = gui->addCheckBox(false, irr::core::recti(205, 125 + offset, 300, 145 + offset), main, DYNAMIC_SKY_CHECK, L"Dynamic Sky");
+
+	gui->addStaticText(L"Azimuth: ", irr::core::recti(5, 150 + offset, 50, 170 + offset), false, false, main);
+	azimuth = gui->addEditBox(L"45", irr::core::recti(55, 150 + offset, 105, 170 + offset), true, main, AZIMUTH_EDIT);
+	gui->addStaticText(L"Moon Azimuth: ", irr::core::recti(115, 150 + offset, 170, 170 + offset), false, false, main);
+	moonAzimuth = gui->addEditBox(L"100", irr::core::recti(180, 150 + offset, 230, 170 + offset), true, main, MOON_AZIMUTH_EDIT);
+	gui->addStaticText(L"Zenith: ", irr::core::recti(5, 175 + offset, 50, 195 + offset), false, false, main);
+	zenith = gui->addEditBox(L"45", irr::core::recti(55, 175 + offset, 105, 195 + offset), true, main, ZENITH_EDIT);
+	gui->addStaticText(L"Moon Zenith: ", irr::core::recti(115, 175 + offset, 170, 195 + offset), false, false, main);
+	moonZenith = gui->addEditBox(L"100", irr::core::recti(180, 175 + offset, 230, 195 + offset), true, main, MOON_ZENITH_EDIT);
+	
 	
 	//-----------------------------
 	setStaticSky();
@@ -897,6 +997,13 @@ int MainLoop(irr::IrrlichtDevice * dev, DefaultEventReceiver * eventReciever)
 
 		//move the camera
 		eventReciever->Update(deltaTime);
+		//update the sky
+		if (sky)
+			sky->Update();
+
+		//update time
+		if (runTime)
+			updateTime(deltaTime);
 
 		//loop stuff
 		video->beginScene(true, true, irr::video::SColor(255, 0, 0, 0));
@@ -958,6 +1065,10 @@ int main(int argc, char * argv[])
 
 	//close everything
 	deleteSky();
+
+	//remove all scene nodes
+	dome->remove();
+	_dev->getSceneManager()->getRootSceneNode()->removeAll();
 
 	delete eventReciever;
 	eventReciever = NULL;

@@ -35,6 +35,8 @@
 
 #include "IrrBIOSkyDome.hpp"
 
+#include <iostream>
+
 IrrBIOSkyDome::IrrBIOSkyDome(irr::scene::ISceneNode * parent, irr::scene::ISceneManager * sm, irr::s32 id) : 
 irr::scene::ISceneNode(parent, sm, id),
 _bBox(),
@@ -45,27 +47,35 @@ _sunTexture(NULL),
 _moon(NULL),
 _moonTexture(NULL),
 _material(),
-_vertData(NULL)
+_vertData(NULL),
+_nightGeometry(NULL),
+_nightMaterial(),
+_nightTexture(NULL)
 {
+	
 	_material.Wireframe = false;
 	_material.Lighting = false;
 	_material.MaterialType = irr::video::E_MATERIAL_TYPE::EMT_TRANSPARENT_ALPHA_CHANNEL;
 
 	//create the geometry
-	BIO::SKY::RawGeometry * dome = BIO::SKY::CreateSkyDomeGeometry(_radius, 12, 6);
-
+	BIO::SKY::RawGeometry * dome = BIO::SKY::CreateSkyDomeGeometry(_radius, 12, 12);
+	
 	irr::scene::SMeshBuffer * buffer = new irr::scene::SMeshBuffer();
 
+	buffer->Indices.clear();
 	buffer->Indices.set_used(dome->numIndecies);
-
+	
 	for (int i = 0; i < dome->numIndecies; ++i)
+	{
 		buffer->Indices[i] = dome->indecies[i];
+	}
 
 	// Create vertices
 	irr::video::SColor clr(255, 255, 255, 255);
 
+	buffer->Vertices.clear();
 	buffer->Vertices.reallocate(dome->numVertecies);
-
+	
 	for (int i = 0; i < dome->numVertecies; i++)
 	{
 		buffer->Vertices.push_back(irr::video::S3DVertex(dome->vertecies[i].X, dome->vertecies[i].Y, dome->vertecies[i].Z, -1, -1, -1, clr, dome->UVTextureCoordinates[i].X, dome->UVTextureCoordinates[i].Y));
@@ -73,13 +83,41 @@ _vertData(NULL)
 
 	// Recalculate bounding box
 	buffer->BoundingBox.reset(0, 0, 0);
-
+	
 	for (int i = 0; i < dome->numVertecies; ++i)
 	{
 		buffer->BoundingBox.addInternalPoint(buffer->Vertices[i].Pos);
 	}
 
 	_geometry = buffer;
+	buffer = NULL;
+
+	delete dome;
+	dome = NULL;
+
+	
+	BIO::SKY::RawGeometry * night = BIO::SKY::CreateNightSkyDomeGeometry(_radius);
+	
+	irr::scene::SMeshBuffer * bufferNight = new irr::scene::SMeshBuffer();
+	bufferNight->Indices.clear();
+	bufferNight->Indices.set_used(night->numIndecies);
+	for (int i = 0; i < night->numIndecies; ++i)
+	{
+		bufferNight->Indices[i] = night->indecies[i];
+	}
+	bufferNight->Vertices.clear();
+	bufferNight->Vertices.reallocate(night->numVertecies);
+	for (int i = 0; i < night->numVertecies; i++)
+	{
+		bufferNight->Vertices.push_back(irr::video::S3DVertex(night->vertecies[i].X, night->vertecies[i].Y, night->vertecies[i].Z, -1, -1, -1, clr, night->UVTextureCoordinates[i].X, night->UVTextureCoordinates[i].Y));
+	}
+	bufferNight->BoundingBox.reset(0, 0, 0);
+	for (int i = 0; i < night->numVertecies; ++i)
+	{
+		bufferNight->BoundingBox.addInternalPoint(bufferNight->Vertices[i].Pos);
+	}
+	_nightGeometry = bufferNight;
+	delete night;
 
 	//Create the sun
 	const float _domeRadiusToSunBillboardRatio = 0.15f;
@@ -129,6 +167,36 @@ _vertData(NULL)
 	_moon->setMaterialType(irr::video::EMT_TRANSPARENT_ALPHA_CHANNEL);
 	//-----------------------------------------------------
 
+	//Setup Night material --------------------------------
+	int nightTextureWidth = 0;
+	int nightTextureHeight = 0;
+
+	tmptex = BIO::SKY::CreateNightSkyTexture(&nightTextureWidth, &nightTextureHeight);
+
+	_nightTexture = sm->getVideoDriver()->addTexture(irr::core::dimension2du(nightTextureWidth, nightTextureHeight), "_internal/Sky/NightSkyTexture");
+
+	
+
+	locked = (unsigned char *)_nightTexture->lock();
+	/*for (int i = 0; i < nightTextureWidth * nightTextureHeight * 4; i++)
+	{
+		locked[i] = tmptex[i];
+	}*/
+	memcpy((void*)locked, (void*)tmptex, sizeof(unsigned char) * nightTextureWidth * nightTextureHeight * 4);
+	_nightTexture->unlock();
+	delete[] tmptex;
+
+	if (_nightTexture == NULL)
+	{
+		std::cout << "ERROR GETTING NIGHT SKY TEXTURE" << std::endl;
+	}
+
+	_nightMaterial.setTexture(0, _nightTexture);
+	_nightMaterial.Wireframe = false;
+	_nightMaterial.Lighting = false;
+	_nightMaterial.UseMipMaps = false;
+	_nightMaterial.MaterialType = irr::video::E_MATERIAL_TYPE::EMT_TRANSPARENT_ALPHA_CHANNEL;
+	//-----------------------------------------------------
 }
 
 IrrBIOSkyDome::~IrrBIOSkyDome()
@@ -168,6 +236,18 @@ IrrBIOSkyDome::~IrrBIOSkyDome()
 		_geometry->drop();
 		_geometry = NULL;
 	}
+
+	if (_nightTexture)
+	{
+		SceneManager->getVideoDriver()->removeTexture(_nightTexture);
+		_nightTexture = NULL;
+	}
+
+	if (_nightGeometry)
+	{
+		_nightGeometry->drop();
+		_nightGeometry = NULL;
+	}
 }
 
 void IrrBIOSkyDome::OnRegisterSceneNode()
@@ -183,10 +263,19 @@ void IrrBIOSkyDome::render()
 	irr::video::IVideoDriver * driver = SceneManager->getVideoDriver();
 
 	//set the transform
-	driver->setTransform(irr::video::ETS_WORLD, AbsoluteTransformation);
+	driver->setTransform(irr::video::ETS_WORLD, _starTransformations);
 
+	if (_nightGeometry)
+	{
+		//draw night
+		driver->setMaterial(_nightMaterial);
+		driver->drawMeshBuffer(_nightGeometry);
+	}
+
+	driver->setTransform(irr::video::ETS_WORLD, AbsoluteTransformation);
 	if (_geometry)
 	{
+		//draw day
 		driver->setMaterial(_material);
 		driver->drawMeshBuffer(_geometry);
 	}
@@ -238,6 +327,15 @@ void IrrBIOSkyDome::SetMoonPosition(float unitX, float unitY, float unitZ)
 		unitZ * _radius
 		)
 		);
+}
+
+void IrrBIOSkyDome::SetStarRotation(float x, float y, float z)
+{
+	//_starTransformations.setRotationRadians(irr::core::vector3df(x, y, z));
+	irr::core::matrix4 tmp;
+	tmp.setRotationRadians(irr::core::vector3df(0, y, 0));
+	_starTransformations.setRotationRadians(irr::core::vector3df(x, 0, 0));
+	_starTransformations *= tmp;
 }
 
 void IrrBIOSkyDome::SetSunPosition(float unitX, float unitY, float unitZ)

@@ -237,6 +237,17 @@ namespace BIO
 			BIOSKY_API void SetMoonPosition(float lunarAzimuth, float lunarZenith);
 
 			/**
+			* Set the position of the Stars.
+			*
+			* @param zenith The zenith is the only thing that changes on the
+			*			position of the stars. The azimuth is always pointing
+			*			north and the zenith depends on latitude. The equation
+			*			is (PI/2) - latitude Radians (90 - latitude Degrees).
+			*			This function takes the zenith in Radians.
+			*/
+			BIOSKY_API void SetStarPosition(float zenith, float rotation);
+
+			/**
 			* Set the position in the sky of the sun.
 			*
 			* @param pos A struct containing the position of the sun.

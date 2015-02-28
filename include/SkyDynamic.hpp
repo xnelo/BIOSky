@@ -1,10 +1,10 @@
 /**
-* @file SkyStatic.hpp
+* @file SkyDynamic.hpp
 * @author Spencer Hoffa
 *
 * @copyright 2015 Spencer Hoffa
 *
-* Defines the interface for a static sky (One that does not change).
+* The class for dynamic skies that change when the update function is called.
 */
 /*
 * The zlib/libpng License
@@ -33,32 +33,46 @@
 * This liscense can also be found at: http://opensource.org/licenses/Zlib
 */
 
-#ifndef ___BIOSKY_SKYSTATIC_HPP__2015___
-#define ___BIOSKY_SKYSTATIC_HPP__2015___
+#ifndef ___BIOSKY_SKYDYNAMIC_HPP__2015___
+#define ___BIOSKY_SKYDYNAMIC_HPP__2015___
 
 #include "CompileConfig.h"
 #include "Sky.hpp"
+#include "SkyCalculations.hpp"
 
 namespace BIO
 {
 	namespace SKY
 	{
 		/**
-		* This defines the interface for a static BIOSky. This sky doesn't 
-		* change.
+		* Dynamic Sky class that changes with every call of the update 
+		* function.
 		*/
-		class SkyStatic : public Sky
+		class SkyDynamic : public Sky, public SkyCalculations
 		{
 		public:
 			/**
 			* Constructor
+			*
+			* @param geometry A pointer to the geometry class that renders the 
+			*			skydome.
+			*
+			* @param dateTime A pointer to the DateTime object that keeps track 
+			*			of the current time. This allows for the user to update
+			*			the date and time in his own application and it is 
+			*			automatically updated in the library.
+			*
+			* @param gps A pointer to the GPS object the keeps track of the 
+			*			current GPS location. This allows the user to update
+			*			the GPS location in his own application and it is 
+			*			automatically updated in the library.
 			*/
-			BIOSKY_API SkyStatic(IDomeGeometry * skydome);
+			BIOSKY_API SkyDynamic(IDomeGeometry * geometry, DateTime * dateTime, GPS * gps);
 
 			/**
 			* Destructor
 			*/
-			BIOSKY_API virtual ~SkyStatic();
+			BIOSKY_API virtual ~SkyDynamic();
 
 			/**
 			* Update the sky simulation according to the currently stored time
@@ -100,40 +114,31 @@ namespace BIO
 	}//end namespace SKY
 }//end namespace BIO
 
-inline BIO::SKY::SkyStatic::SkyStatic(IDomeGeometry * skydome) : Sky(skydome)
-{}
-
-inline BIO::SKY::SkyStatic::~SkyStatic()
-{}
-
-inline void BIO::SKY::SkyStatic::Update()
+inline void BIO::SKY::SkyDynamic::Update(float deltaTime)
 {
-	/*DO NOTHING*/
+	_dateTime->AddTime(deltaTime);
+
+	Update();
 }
 
-inline void BIO::SKY::SkyStatic::Update(float deltaTime)
+inline void BIO::SKY::SkyDynamic::UpdateMoonPosition()
 {
-	/*DO NOTHING*/
+	SetMoonPosition(CalculateMoonPosition());
 }
 
-inline void BIO::SKY::SkyStatic::UpdateMoonPosition()
+inline void BIO::SKY::SkyDynamic::UpdateStarPosition()
 {
-	/*DO NOTHING*/
+	SetStarPosition(CalculateCelestialNorthZenith(), CalculateStarRotation());
 }
 
-inline void BIO::SKY::SkyStatic::UpdateStarPosition()
+inline void BIO::SKY::SkyDynamic::UpdateStarRotation()
 {
-	/*DO NOTHING*/
+	SetStarPosition(CalculateCelestialNorthZenith(), CalculateStarRotation());
 }
 
-inline void BIO::SKY::SkyStatic::UpdateStarRotation()
+inline void BIO::SKY::SkyDynamic::UpdateSunPosition()
 {
-	/*DO NOTHING*/
+	SetSunPosition(CalculateSunPosition());
 }
 
-inline void BIO::SKY::SkyStatic::UpdateSunPosition()
-{
-	/*DO NOTHING*/
-}
-
-#endif //___BIOSKY_SKYSTATIC_HPP__2015___
+#endif //___BIOSKY_SKYDYNAMIC_HPP__2015___

@@ -66,11 +66,24 @@ namespace BIO
 			/**
 			* Set the position in the sky of the moon.
 			*
-			* @param lunarAzimuth The angle from north.
+			* @param lunarAzimuth The angle from north in Radians.
 			*
-			* @param lunarZenith The angle from the zenith position.
+			* @param lunarZenith The angle from the zenith position in Radians.
 			*/
 			virtual void SetMoonPosition(float lunarAzimuth, float lunarZenith) = 0;
+
+			/**
+			* Set the position of the Stars.
+			*
+			* @param zenith The zenith is the only thing that changes on the 
+			*			position of the stars. The azimuth is always pointing 
+			*			north and the zenith depends on latitude. The equation 
+			*			is (PI/2) - latitude Radians (90 - latitude Degrees). 
+			*			This function takes the zenith in Radians.
+			*
+			* @param rotation The Rotation around the celestial pole.
+			*/
+			virtual void SetStarPosition(float zenith, float rotation) = 0;
 
 			/**
 			* Set the position in the sky of the sun.
@@ -114,6 +127,9 @@ namespace BIO
 			* @note This function should NOT be called every frame.
 			*/
 			virtual void UpdateMoonPosition() = 0;
+
+			virtual void UpdateStarPosition() = 0;
+			virtual void UpdateStarRotation() = 0;
 
 			/**
 			* Update the sky color.

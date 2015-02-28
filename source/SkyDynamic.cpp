@@ -1,13 +1,10 @@
 /**
-* @file BIOSky.hpp
+* @file SkyDynamic.cpp
 * @author Spencer Hoffa
 *
 * @copyright 2015 Spencer Hoffa
 *
-* This include file will included all the needed header files for the BIOSky 
-* library. Just include this file and you are ready to use the library.
-*
-* This file also has functions that are global to the library.
+* The implementation of the SkyDynamic class.
 */
 /*
 * The zlib/libpng License
@@ -36,34 +33,37 @@
 * This liscense can also be found at: http://opensource.org/licenses/Zlib
 */
 
-#ifndef ___BIOSKY_BIOSKY_HPP__2015___
-#define ___BIOSKY_BIOSKY_HPP__2015___
-
-//compile configurations
-#include "CompileConfig.h"
-//constants
-#include "MathUtils.hpp"
-#include "Error.hpp"
-//Independent helper classes
-#include "SkyPosition.hpp"
-#include "RawGeometry.hpp"
-#include "Vector3D.hpp"
-#include "Vector2D.hpp"
-#include "Date.hpp"
-#include "DateTime.hpp"
-#include "GPS.hpp"
-//Interfaces
-#include "IDomeVertecies.hpp"
-#include "IDomeGeometry.hpp"
-#include "ISky.hpp"
-//Sky functions
-#include "BIOSkyFunctions.hpp"
-//Sky classes
-#include "Sky.hpp"
-#include "SkyStatic.hpp"
-#include "SkyStaticManual.hpp"
-#include "SkyCalculations.hpp"
-#include "SkyStaticCalculated.hpp"
 #include "SkyDynamic.hpp"
 
-#endif //___BIOSKY_BIOSKY_HPP__2015___
+namespace BIO
+{
+	namespace SKY
+	{
+		SkyDynamic::SkyDynamic(IDomeGeometry * geometry, DateTime * dateTime, GPS * gps) :
+			Sky(geometry),
+			SkyCalculations(dateTime, gps)
+		{
+			UpdateSunPosition();
+			UpdateMoonPosition();
+			UpdateStarPosition();
+			UpdateStarRotation();
+			UpdateSkyColor();
+		}
+
+		SkyDynamic::~SkyDynamic()
+		{
+		}
+
+		void SkyDynamic::Update()
+		{
+			UpdateSunPosition();
+
+			UpdateMoonPosition();
+
+			UpdateStarRotation();
+
+			UpdateSkyColor();
+		}
+	}//end namespace sky
+}//end namespace BIO
+
