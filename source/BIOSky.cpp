@@ -257,7 +257,11 @@ namespace BIO
 
 			float UT = standardTime - UTCoffset;	// universal time
 
-			return UT * _15Degrees;
+			//       Time            Degrees       Offset to start
+			//                       per hour      stars at correct spot
+			//    (Universal_Time * 15_Degrees) + 145_Degrees
+			//return (UT * _15Degrees) + (145 * MATH::DegreesToRadiansf);
+			return (UT * _15Degrees) + 2.530727415f;
 		}
 
 		RawGeometry * CreateSkyDomeGeometry(float radius, int numVerticalSegments, int numHorozontalSegments, bool fullDome)
