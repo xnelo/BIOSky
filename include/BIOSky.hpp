@@ -46,6 +46,7 @@
 #include "Error.hpp"
 //Independent helper classes
 #include "SkyPosition.hpp"
+#include "SkyData.hpp"
 #include "RawGeometry.hpp"
 #include "Vector3D.hpp"
 #include "Vector2D.hpp"

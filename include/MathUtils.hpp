@@ -38,6 +38,8 @@
 
 #include <cmath>
 
+#include "CompileConfig.h"
+
 namespace BIO
 {
 	namespace MATH
@@ -103,6 +105,10 @@ namespace BIO
 		*/
 		template<typename numType>
 		numType SquaredDistance(numType x1, numType y1, numType x2, numType y2);
+
+#if BIOSKY_TESTING == 1
+		bool MathTests(XNELO::TESTING::Test * test);
+#endif
 	}//end namespace MATH
 }//end namespace BIO
 
@@ -127,5 +133,28 @@ inline numType BIO::MATH::SquaredDistance(numType x1, numType y1, numType x2, nu
 
 	return (tmpx * tmpx) + (tmpy * tmpy);
 }
+
+#if BIOSKY_TESTING == 1
+inline bool BIO::MATH::MathTests(XNELO::TESTING::Test * test)
+{
+	test->SetName("MathUtils Tests");
+
+	float tolerance =		0.000001f;
+	float revRedTolerance = 0.0001f;
+	double dblTolerance =	0.0000000005;
+
+	test->UnitTest(SquaredDistance(2.0f, 2.0f, 0.0f, 0.0f), 8.0f, tolerance, "Test floating point SquaredDistance");
+	test->UnitTest(SquaredDistance(2.345, 4.97, 0.0, 0.0), 30.199925, dblTolerance, "Test double point SquaredDistance");
+
+	test->UnitTest(Distance(2.0f, 2.0f, 0.0f, 0.0f), 2.828427125f, tolerance, "Test floating point Distance");
+	test->UnitTest(Distance(2.345, 4.97, 0.0, 0.0), 5.495445842, dblTolerance, "Test double point Distance");
+
+	test->UnitTest(RevolutionReductionDegrees(-973) == 107, "Test RevolutionReduction Integer");
+	test->UnitTest(RevolutionReductionDegrees(1847.587000f), 47.587000f, revRedTolerance, "Test RevolutionReduction Float");
+	test->UnitTest(RevolutionReductionDegrees(1847.2056158765), 47.2056158765, dblTolerance, "Test RevolutionReduction Double");
+
+	return test->GetSuccess();
+}
+#endif
 
 #endif //___BIOENGINE_MATHUTILS_H__2014___

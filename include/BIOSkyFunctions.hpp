@@ -38,6 +38,7 @@
 
 #include "CompileConfig.h"
 #include "SkyPosition.hpp"
+#include "SkyData.hpp"
 #include "Date.hpp"
 #include "RawGeometry.hpp"
 #include "MathUtils.hpp"
@@ -87,6 +88,36 @@ namespace BIO
 		*			directly above where the sun appears.
 		*/
 		BIOSKY_API SkyPosition CalculateMoonPosition(float standardTime, float UTCoffset, DATE_MONTH month, unsigned int day, unsigned int year, float latitude, float longitude);
+
+		/**
+		* Calculate all of the information needed for the positioning of 
+		* celestial objects in the BIOSky library.
+		*
+		* @param standardTime The time in 24 hr decimal format. For Example
+		*			1:15 PM == 13.25.
+		*
+		* @param UTCoffset The number of hours offset from UTC-0 time.
+		*
+		* @param month The month of the year.
+		*
+		* @param day The day of the month.
+		*
+		* @param year The year.
+		*
+		* @param latitude The latitude of the location we are calculating
+		*			the Moon Position for in radians. Location North of the
+		*			equator are positive and locations South of the equator
+		*			are negative. Range: -PI/2 to PI/2.
+		*
+		* @param longitude The longitude of the location we are calculating
+		*			the Moon Position for in radians. Locations east of the
+		*			prime meridian are positive and locations west of the
+		*			prime meridian are negative. Range: -PI to PI.
+		*
+		* @return Returns a SkyData structure with all of the data needed to 
+		*			position the sun, moon, stars, and moon phase.
+		*/
+		//BIOSKY_API SkyData CalculateSkyData(float standardTime, float UTCoffset, DATE_MONTH month, unsigned int day, unsigned int year, float latitude, float longitude);
 
 		/**
 		* Calculates the rotation angle of the stars around the celestial north
@@ -208,6 +239,17 @@ namespace BIO
 		*			done with it.
 		*/
 		BIOSKY_API unsigned char * CreateSunTexture(int sideLength);
+
+		/**
+		* Run tests on the BIOSky library.
+		*
+		* @return Returns true iff all the tests passed.
+		*/
+#ifdef BIOSKY_TESTING
+		BIOSKY_API bool BIOSkyTests();
+#else
+		BIOSKY_API bool BIOSkyTests();
+#endif 
 
 	}//end namespace SKY
 }//end namespace BIO

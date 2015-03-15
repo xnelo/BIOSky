@@ -81,6 +81,19 @@ namespace BIO
 		* Assignment operator
 		*/
 		BIOSKY_API Vector3D & operator = (const Vector3D & other);
+
+#if BIOSKY_TESTING == 1
+		/**
+		* Test this class.
+		*
+		* @param test A pointer to a Test class that holds all the function
+		*				for testing and will hold all the results of the
+		*				testing.
+		*
+		* @return Returns true iff all the tests pass.
+		*/
+		static bool Test(XNELO::TESTING::Test * test);
+#endif
 	};
 }//end namespace BIO
 
@@ -107,6 +120,39 @@ inline BIO::Vector3D & BIO::Vector3D::operator = (const Vector3D & other)
 
 	return *this;
 }
+
+#if BIOSKY_TESTING == 1
+inline bool BIO::Vector3D::Test(XNELO::TESTING::Test * test)
+{
+	test->SetName("Vector3D Tests");
+
+	Vector3D vec;
+
+	test->UnitTest(vec.X == 0.0f, "Test Default constructor[1]");
+	test->UnitTest(vec.Y == 0.0f, "Test Default constructor[2]");
+	test->UnitTest(vec.Z == 0.0f, "Test Default constructor[3]");
+
+	Vector3D vec2(1.23f, 4.56f, 7.89f);
+
+	test->UnitTest(vec2.X == 1.23f, "Test constructor[1]");
+	test->UnitTest(vec2.Y == 4.56f, "Test constructor[2]");
+	test->UnitTest(vec2.Z == 7.89f, "Test constructor[3]");
+
+	Vector3D vec3(vec2);
+
+	test->UnitTest(vec3.X == 1.23f, "Test copy constructor[1]");
+	test->UnitTest(vec3.Y == 4.56f, "Test copy constructor[2]");
+	test->UnitTest(vec3.Z == 7.89f, "Test copy constructor[3]");
+
+	vec = vec3;
+
+	test->UnitTest(vec.X == 1.23f, "Test assignment operator[1]");
+	test->UnitTest(vec.Y == 4.56f, "Test assignment operator[2]");
+	test->UnitTest(vec.Z == 7.89f, "Test assignment operator[3]");
+
+	return test->GetSuccess();
+}
+#endif
 
 #endif //___BIOSKY_VECTOR3D_HPP__2015___
 

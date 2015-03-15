@@ -144,6 +144,19 @@ namespace BIO
 		* @param lon The longitude in radians.
 		*/
 		BIOSKY_API void SetLongitudeRadians(float lon);
+
+#if BIOSKY_TESTING == 1
+		/**
+		* Test this class.
+		*
+		* @param test A pointer to a Test class that holds all the function
+		*				for testing and will hold all the results of the
+		*				testing.
+		*
+		* @return Returns true iff all the tests pass.
+		*/
+		static bool Test(XNELO::TESTING::Test * test);
+#endif
 	};
 } //end namespace BIO
 

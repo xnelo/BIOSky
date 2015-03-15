@@ -78,4 +78,51 @@ namespace BIO
 	//^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 	//					End Private Functions
 	///////////////////////////////////////////////////////////////////////
+
+#if BIOSKY_TESTING == 1
+	bool GPS::Test(XNELO::TESTING::Test * test)
+	{
+		test->SetName("GPS Tests");
+
+		GPS gps;
+
+		test->UnitTest(gps.GetLatitude() == 0.0f, "Test Default Latitude Value");
+		test->UnitTest(gps.GetLongitude() == 0.0f, "Test Default Longitude Value");
+
+		gps.SetLatitude(41.0f);
+		gps.SetLongitude(-112.0f);
+
+		test->UnitTest(gps.GetLatitude() == 41.0f, "Test Set Latitude");
+		test->UnitTest(gps.GetLongitude() == -112.0f, "Test Set Longitude");
+
+		gps.SetLatitude(90.1f);
+		gps.SetLongitude(-192.0f);
+
+		test->UnitTest(gps.GetLatitude() == 90.0f, "Test Set Latitude Cap Upper Bounds");
+		test->UnitTest(gps.GetLongitude() == -180.0f, "Test Set Longitude Cap Lower Bounds");
+
+		gps.SetLatitude(-100.0f);
+		gps.SetLongitude(200.0f);
+
+		test->UnitTest(gps.GetLatitude() == -90.0f, "Test Set Latitude Cap Lower Bounds");
+		test->UnitTest(gps.GetLongitude() == 180.0f, "Test Set Longitude Cap Upper Bounds");
+
+		test->UnitTest(gps.GetLatitudeRadians() == -MATH::PId2f, "Test GetLatitude in radians");
+		test->UnitTest(gps.GetLongitudeRadians() == MATH::PIf, "Test GetLongitude in radians");
+
+		gps.SetLatitudeRadians(1.7f);
+		gps.SetLongitudeRadians(-3.2f);
+
+		test->UnitTest(gps.GetLatitude() == 90.0f, "Test Set Latitude Radians Cap Upper Bounds");
+		test->UnitTest(gps.GetLongitude() == -180.0f, "Test Set Longitude Radians Cap Lower Bounds");
+
+		gps.SetLatitudeRadians(-2.0f);
+		gps.SetLongitudeRadians(4.0f);
+
+		test->UnitTest(gps.GetLatitude() == -90.0f, "Test Set Latitude Radians Cap Lower Bounds");
+		test->UnitTest(gps.GetLongitude() == 180.0f, "Test Set Longitude Radians Cap Upper Bounds");
+
+		return test->GetSuccess();
+	}
+#endif
 }//end namespace BIO

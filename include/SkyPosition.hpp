@@ -65,6 +65,20 @@ namespace BIO
 			* @param zenith The zenith angle.
 			*/
 			BIOSKY_API SkyPosition(float azimuth, float zenith);
+
+
+#if BIOSKY_TESTING == 1
+			/**
+			* Test this class.
+			*
+			* @param test A pointer to a Test class that holds all the function
+			*				for testing and will hold all the results of the 
+			*				testing.
+			*
+			* @return Returns true iff all the tests pass.
+			*/
+			static bool Test(XNELO::TESTING::Test * test);
+#endif
 		};
 	}//end namespace SKY
 }//end namespace BIO
@@ -78,6 +92,26 @@ inline BIO::SKY::SkyPosition::SkyPosition(float azimuth, float zenith) :
 Azimuth(azimuth), 
 Zenith(zenith)
 {}
+
+#if BIOSKY_TESTING == 1
+inline bool BIO::SKY::SkyPosition::Test(XNELO::TESTING::Test * test)
+{
+	test->SetName("SkyPosition Tests");
+
+	float tolerance = 0.005f;
+
+	SkyPosition skyPos;
+	SkyPosition skyPos2(2.34f, 1.23f);
+
+	test->UnitTest(((skyPos.Azimuth == 0.0f) && 
+					(skyPos.Zenith == 0.0f)) == true, "Test Default constructor");
+
+	test->UnitTest(skyPos2.Azimuth, 2.34f, tolerance, "Test constructor[1]");
+	test->UnitTest(skyPos2.Zenith, 1.23f, tolerance, "Test constructor[2]");
+
+	return test->GetSuccess();
+}
+#endif
 
 #endif //___BIOSKY_SKYPOSITION_HPP__2015___
 

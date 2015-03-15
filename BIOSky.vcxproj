@@ -87,6 +87,7 @@
     <ClInclude Include="include\ISky.hpp" />
     <ClInclude Include="include\lodepng.h" />
     <ClInclude Include="include\MathUtils.hpp" />
+    <ClInclude Include="include\SkyData.hpp" />
     <ClInclude Include="include\SkyDynamic.hpp" />
     <ClInclude Include="include\SkyStaticCalculated.hpp" />
     <ClInclude Include="include\SkyStaticManual.hpp" />

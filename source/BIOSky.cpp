@@ -46,26 +46,12 @@
 
 #include <fstream>
 
-std::size_t loadFile(unsigned char ** buffer, const std::string& filename) //designed for loading files from hard disk in an std::vector
-{
-	std::ifstream file(filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
-
-	//get filesize
-	std::size_t size = 0;
-	if (file.seekg(0, std::ios::end).good()) size = (std::size_t)file.tellg();
-	if (file.seekg(0, std::ios::beg).good()) size -= (std::size_t)file.tellg();
-
-	//read contents of the file into the vector
-	if (size > 0)
-	{
-		//buffer.resize((size_t)size);
-		(*buffer) = new unsigned char[size];
-		file.read((char*)(*buffer), size);
-	}
-	else (*buffer) = NULL;
-
-	return size;
-}
+#include <iostream>//needed for testing functions
+#if BIOSKY_TESTING == 1
+//Included all non-included headers for testing.
+#include "DateTime.hpp"
+#include "GPS.hpp"
+#endif
 
 namespace BIO
 {
@@ -105,6 +91,15 @@ namespace BIO
 			//BIO_LOG_CRITICAL("x: " << x << " y: " << y);
 
 			float r = sqrt(x*x + y*y);// = 60.67134 Earth radii
+			//--------------------------------------------------------------------------------
+			//--------------------------------------------------------------------------------
+			//--------------------------------------------------------------------------------
+			//
+			//				Need V for moon phase
+			//
+			//--------------------------------------------------------------------------------
+			//--------------------------------------------------------------------------------
+			//--------------------------------------------------------------------------------
 			float v = MATH::RevolutionReductionDegrees(atan2(y, x) * MATH::RadiansToDegreesf);// in degrees = 259.8605_deg
 			//BIO_LOG_CRITICAL("r: " << r << " v: " << v);
 
@@ -196,6 +191,15 @@ namespace BIO
 
 			//BIO_LOG_CRITICAL("r: " << r << " v: " << v);
 
+			//--------------------------------------------------------------------------------
+			//--------------------------------------------------------------------------------
+			//--------------------------------------------------------------------------------
+			//
+			//				Need lon for moon phase
+			//
+			//--------------------------------------------------------------------------------
+			//--------------------------------------------------------------------------------
+			//--------------------------------------------------------------------------------
 			float lon = MATH::RevolutionReductionDegrees(v + w);//longitude of sun in degrees
 
 			//BIO_LOG_CRITICAL("long: " << lon);
@@ -818,5 +822,207 @@ namespace BIO
 
 			return rtn;
 		}
+
+
+#if BIOSKY_TESTING == 1
+		bool LibraryTests(XNELO::TESTING::Test * test)
+		{
+			test->SetName("BIOSky Functions Test");
+
+			SkyPosition pos;
+
+			float positionTolerance = 0.0001f;
+
+			pos = CalculateSunPosition(0.0f, -7, JUNE, 6, 2003, 0.7155849933f, -1.954768762f);
+			test->UnitTest(pos.Azimuth, 6.1641f, positionTolerance, "Azimuth 0000");
+			test->UnitTest(pos.Zenith, 2.02607f, positionTolerance, "Zenith 0000");
+
+			pos = CalculateSunPosition(1.0f, -7, JUNE, 6, 2003, 0.7155849933f, -1.954768762f);
+			test->UnitTest(pos.Azimuth, 0.149771f, positionTolerance, "Azimuth 0100");
+			test->UnitTest(pos.Zenith, 2.02295f, positionTolerance, "Zenith 0100");
+
+			pos = CalculateSunPosition(2.0f, -7, JUNE, 6, 2003, 0.7155849933f, -1.954768762f);
+			test->UnitTest(pos.Azimuth, 0.408165f, positionTolerance, "Azimuth 0200");
+			test->UnitTest(pos.Zenith, 1.96833f, positionTolerance, "Zenith 0200");
+
+			pos = CalculateSunPosition(3.0f, -7, JUNE, 6, 2003, 0.7155849933f, -1.954768762f);
+			test->UnitTest(pos.Azimuth, 0.642539f, positionTolerance, "Azimuth 0300");
+			test->UnitTest(pos.Zenith, 1.86901f, positionTolerance, "Zenith 0300");
+
+			pos = CalculateSunPosition(4.0f, -7, JUNE, 6, 2003, 0.7155849933f, -1.954768762f);
+			test->UnitTest(pos.Azimuth, 0.84901f, positionTolerance, "Azimuth 0400");
+			test->UnitTest(pos.Zenith, 1.73481f, positionTolerance, "Zenith 0400");
+
+			pos = CalculateSunPosition(5.0f, -7, JUNE, 6, 2003, 0.7155849933f, -1.954768762f);
+			test->UnitTest(pos.Azimuth, 1.03111f, positionTolerance, "Azimuth 0500");
+			test->UnitTest(pos.Zenith, 1.57522f, positionTolerance, "Zenith 0500");
+
+			pos = CalculateSunPosition(6.0f, -7, JUNE, 6, 2003, 0.7155849933f, -1.954768762f);
+			test->UnitTest(pos.Azimuth, 1.19597f, positionTolerance, "Azimuth 0600");
+			test->UnitTest(pos.Zenith, 1.39801f, positionTolerance, "Zenith 0600");
+
+			pos = CalculateSunPosition(7.0f, -7, JUNE, 6, 2003, 0.7155849933f, -1.954768762f);
+			test->UnitTest(pos.Azimuth, 1.35237f, positionTolerance, "Azimuth 0700");
+			test->UnitTest(pos.Zenith, 1.20921f, positionTolerance, "Zenith 0700");
+
+			pos = CalculateSunPosition(8.0f, -7, JUNE, 6, 2003, 0.7155849933f, -1.954768762f);
+			test->UnitTest(pos.Azimuth, 1.51102f, positionTolerance, "Azimuth 0800");
+			test->UnitTest(pos.Zenith, 1.01374f, positionTolerance, "Zenith 0800");
+
+			pos = CalculateSunPosition(9.0f, -7, JUNE, 6, 2003, 0.7155849933f, -1.954768762f);
+			test->UnitTest(pos.Azimuth, 1.68757f, positionTolerance, "Azimuth 0900");
+			test->UnitTest(pos.Zenith, 0.816463f, positionTolerance, "Zenith 0900");
+
+			pos = CalculateSunPosition(10.0f, -7, JUNE, 6, 2003, 0.7155849933f, -1.954768762f);
+			test->UnitTest(pos.Azimuth, 1.91086f, positionTolerance, "Azimuth 1000");
+			test->UnitTest(pos.Zenith, 0.624135f, positionTolerance, "Zenith 1000");
+
+			pos = CalculateSunPosition(11.0f, -7, JUNE, 6, 2003, 0.7155849933f, -1.954768762f);
+			test->UnitTest(pos.Azimuth, 2.24444f, positionTolerance, "Azimuth 1100");
+			test->UnitTest(pos.Zenith, 0.450884f, positionTolerance, "Zenith 1100");
+
+			pos = CalculateSunPosition(12.0f, -7, JUNE, 6, 2003, 0.7155849933f, -1.954768762f);
+			test->UnitTest(pos.Azimuth, 2.8096f, positionTolerance, "Azimuth 1200");
+			test->UnitTest(pos.Zenith, 0.334566f, positionTolerance, "Zenith 1200");
+
+			pos = CalculateSunPosition(13.0f, -7, JUNE, 6, 2003, 0.7155849933f, -1.954768762f);
+			test->UnitTest(pos.Azimuth, 3.55137f, positionTolerance, "Azimuth 1300");
+			test->UnitTest(pos.Zenith, 0.342509f, positionTolerance, "Zenith 1300");
+
+			pos = CalculateSunPosition(14.0f, -7, JUNE, 6, 2003, 0.7155849933f, -1.954768762f);
+			test->UnitTest(pos.Azimuth, 4.08532f, positionTolerance, "Azimuth 1400");
+			test->UnitTest(pos.Zenith, 0.468305f, positionTolerance, "Zenith 1400");
+
+			pos = CalculateSunPosition(15.0f, -7, JUNE, 6, 2003, 0.7155849933f, -1.954768762f);
+			test->UnitTest(pos.Azimuth, 4.40162f, positionTolerance, "Azimuth 1500");
+			test->UnitTest(pos.Zenith, 0.644841f, positionTolerance, "Zenith 1500");
+
+			pos = CalculateSunPosition(16.0f, -7, JUNE, 6, 2003, 0.7155849933f, -1.954768762f);
+			test->UnitTest(pos.Azimuth, 4.61754f, positionTolerance, "Azimuth 1600");
+			test->UnitTest(pos.Zenith, 0.838138f, positionTolerance, "Zenith 1600");
+
+			pos = CalculateSunPosition(17.0f, -7, JUNE, 6, 2003, 0.7155849933f, -1.954768762f);
+			test->UnitTest(pos.Azimuth, 4.79109f, positionTolerance, "Azimuth 1700");
+			test->UnitTest(pos.Zenith, 1.0354f, positionTolerance, "Zenith 1700");
+
+			pos = CalculateSunPosition(18.0f, -7, JUNE, 6, 2003, 0.7155849933f, -1.954768762f);
+			test->UnitTest(pos.Azimuth, 4.9489f, positionTolerance, "Azimuth 1800");
+			test->UnitTest(pos.Zenith, 1.23025f, positionTolerance, "Zenith 1800");
+
+			pos = CalculateSunPosition(19.0f, -7, JUNE, 6, 2003, 0.7155849933f, -1.954768762f);
+			test->UnitTest(pos.Azimuth, 5.1058f, positionTolerance, "Azimuth 1900");
+			test->UnitTest(pos.Zenith, 1.41787f, positionTolerance, "Zenith 1900");
+
+			pos = CalculateSunPosition(20.0f, -7, JUNE, 6, 2003, 0.7155849933f, -1.954768762f);
+			test->UnitTest(pos.Azimuth, 5.27222f, positionTolerance, "Azimuth 2000");
+			test->UnitTest(pos.Zenith, 1.59327f, positionTolerance, "Zenith 2000");
+
+			pos = CalculateSunPosition(21.0f, -7, JUNE, 6, 2003, 0.7155849933f, -1.954768762f);
+			test->UnitTest(pos.Azimuth, 5.45673f, positionTolerance, "Azimuth 2100");
+			test->UnitTest(pos.Zenith, 1.75023f, positionTolerance, "Zenith 2100");
+
+			pos = CalculateSunPosition(22.0f, -7, JUNE, 6, 2003, 0.7155849933f, -1.954768762f);
+			test->UnitTest(pos.Azimuth, 5.66617f, positionTolerance, "Azimuth 2200");
+			test->UnitTest(pos.Zenith, 1.88079f, positionTolerance, "Zenith 2200");
+
+			pos = CalculateSunPosition(23.0f, -7, JUNE, 6, 2003, 0.7155849933f, -1.954768762f);
+			test->UnitTest(pos.Azimuth, 5.90341f, positionTolerance, "Azimuth 2300");
+			test->UnitTest(pos.Zenith, 1.97533f, positionTolerance, "Zenith 2300");
+
+			pos = CalculateMoonPosition(17.0f, -4, MARCH, 14, 2015, -10.141931686131018 * MATH::DegreesToRadiansf, -61.875 * MATH::DegreesToRadiansf);
+			test->UnitTest(pos.Azimuth, 4.03603f, positionTolerance, "Moon Azimuth[A]");
+			test->UnitTest(pos.Zenith, 2.36212f, positionTolerance, "Moon Zenith [A]");
+
+			pos = CalculateSunPosition(23.0f, -7, JUNE, 6, 2003, 0.7155849933f, -1.954768762f);
+			test->UnitTest(pos.Azimuth, 5.90343f, positionTolerance, "Moon Azimuth[B]");
+			test->UnitTest(pos.Zenith, 1.9753f, positionTolerance, "Moon Zenith [B]");
+
+			pos = CalculateMoonPosition(0, 0, AUGUST, 17, 2005, 0.715f, 0);
+			test->UnitTest(pos.Azimuth, 3.71909f, positionTolerance, "Moon Azimuth[1]");
+			test->UnitTest(pos.Zenith, 1.33495f, positionTolerance, "Moon Zenith [1]");
+
+			pos = CalculateMoonPosition(4, 0, AUGUST, 17, 2005, 0.715f, 0);
+			test->UnitTest(pos.Azimuth, 4.38435f, positionTolerance, "Moon Azimuth[2]");
+			test->UnitTest(pos.Zenith, 1.92706f, positionTolerance, "Moon Zenith [2]");
+
+			pos = CalculateMoonPosition(8, 0, AUGUST, 17, 2005, 0.715f, 0);
+			test->UnitTest(pos.Azimuth, 5.10441f, positionTolerance, "Moon Azimuth[3]");
+			test->UnitTest(pos.Zenith, 2.66568f, positionTolerance, "Moon Zenith [3]");
+
+			pos = CalculateMoonPosition(12, 0, AUGUST, 17, 2005, 0.715f, 0);
+			test->UnitTest(pos.Azimuth, 1.18376f, positionTolerance, "Moon Azimuth[4]");
+			test->UnitTest(pos.Zenith, 2.65039f, positionTolerance, "Moon Zenith [4]");
+			
+			pos = CalculateMoonPosition(16, 0, AUGUST, 17, 2005, 0.715f, 0);
+			test->UnitTest(pos.Azimuth, 1.88796f, positionTolerance, "Moon Azimuth[5]");
+			test->UnitTest(pos.Zenith, 1.90209f, positionTolerance, "Moon Zenith [5]");
+
+			pos = CalculateMoonPosition(20, 0, AUGUST, 17, 2005, 0.715f, 0);
+			test->UnitTest(pos.Azimuth, 2.55941f, positionTolerance, "Moon Azimuth[6]");
+			test->UnitTest(pos.Zenith, 1.29385f, positionTolerance, "Moon Zenith [6]");
+
+			//CalculateStarRotation
+			float rotationTolerance = 0.00001f;
+			float starRot;
+
+			starRot = CalculateStarRotation(22.0f, -7.0f);
+			test->UnitTest(starRot, 10.12290966f, rotationTolerance, "StarRotation [1]");
+
+			starRot = CalculateStarRotation(4.0f, 8.0f);
+			test->UnitTest(starRot, 1.483529864f, rotationTolerance, "StarRotation [2]");
+
+			starRot = CalculateStarRotation(4.23f, -2.0f);
+			test->UnitTest(starRot, 4.161737601f, rotationTolerance, "StarRotation [3]");
+
+			starRot = CalculateStarRotation(15.092f, 11.0f);
+			test->UnitTest(starRot, 3.60201051f, rotationTolerance, "StarRotation [4]");
+
+
+			//CalculateCelestialNorthPoleZenith
+			float zenith;
+
+			zenith = CalculateCelestialNorthPoleZenith(21.06f * MATH::DegreesToRadiansf);
+			test->UnitTest(zenith, 1.203229986f, rotationTolerance, "StarZenith [0]");
+
+			zenith = CalculateCelestialNorthPoleZenith(-21.06f * MATH::DegreesToRadiansf);
+			test->UnitTest(zenith, 1.938362667f, rotationTolerance, "StarZenith [1]");
+
+			return test->GetSuccess();
+		}
+
+		bool BIOSkyTests()
+		{
+			XNELO::TESTING::OutStreamGenerator gen;
+			gen.SetOutputStream(&std::cout);
+
+			XNELO::TESTING::TestSuite tests("BIOSky Tests");
+			tests.SetReportGenerator(&gen);
+
+			//all tests added here
+			tests.AddTestFunction(&MATH::MathTests);
+			tests.AddTestFunction(&SkyPosition::Test);
+			tests.AddTestFunction(&Vector3D::Test);
+			tests.AddTestFunction(&Vector2D::Test);
+			tests.AddTestFunction(&Date::Test);
+			tests.AddTestFunction(&DateTime::Test);
+			tests.AddTestFunction(&GPS::Test);
+			tests.AddTestFunction(&LibraryTests);
+
+			tests.ExecuteTests();
+
+			return tests.GetSuccess();
+		}
+#else
+		bool BIOSkyTests()
+		{
+			std::cout << "Testing Disabled." << std::endl;
+			return false;
+		}
+#endif 
+
+
+
+
+
 	}//end namespace SKY
 }//end namespace BIO

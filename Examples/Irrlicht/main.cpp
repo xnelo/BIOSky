@@ -1020,6 +1020,13 @@ int MainLoop(irr::IrrlichtDevice * dev, DefaultEventReceiver * eventReciever)
 
 int main(int argc, char * argv[])
 {
+	if (argc > 1)
+	{
+		//execute tests
+		BIO::SKY::BIOSkyTests();
+		return 0;
+	}
+
 	irr::IrrlichtDevice * _dev = NULL;
 	
 

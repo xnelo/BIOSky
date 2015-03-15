@@ -90,10 +90,19 @@
 #endif  /* NULL */
 
 //Do we include tests... They are off by default
+//#define BIOSKY_INCLUDE_TESTS
 #ifdef BIOSKY_INCLUDE_TESTS
-#define BIOSKY_TESTING 1
+	#define BIOSKY_TESTING 1
+
+
+	#define _XNELO_TESTING_STATIC_LIB_
+	#include "C:\Spencer\Xnelo\Testing\include\Testing.hpp"
+	#if _BIOSKY_PLATFORM_ == _BIOSKY_PLATFORM_WINDOWS_
+		#pragma comment(lib, "C:\\Spencer\\Xnelo\\Testing\\lib\\LIB-Debug\\XneloTesting.lib")
+	#endif
+
 #else //testing off
-#define BIOSKY_TESTING 0
+	#define BIOSKY_TESTING 0
 #endif //BIOSKY_INCLUDE_TESTS
 
 #endif //___BIOSKY_COMPILECONFIG_H__2015___

@@ -77,6 +77,19 @@ namespace BIO
 		* Assignment operator
 		*/
 		BIOSKY_API Vector2D & operator = (const Vector2D & other);
+
+#if BIOSKY_TESTING == 1
+		/**
+		* Test this class.
+		*
+		* @param test A pointer to a Test class that holds all the function
+		*				for testing and will hold all the results of the
+		*				testing.
+		*
+		* @return Returns true iff all the tests pass.
+		*/
+		static bool Test(XNELO::TESTING::Test * test);
+#endif
 	};
 }//end namespace BIO
 
@@ -102,5 +115,34 @@ inline BIO::Vector2D & BIO::Vector2D::operator = (const Vector2D & other)
 
 	return *this;
 }
+
+#if BIOSKY_TESTING == 1
+inline bool BIO::Vector2D::Test(XNELO::TESTING::Test * test)
+{
+	test->SetName("Vector3D Tests");
+
+	Vector2D vec;
+
+	test->UnitTest(vec.X == 0.0f, "Test Default constructor[1]");
+	test->UnitTest(vec.Y == 0.0f, "Test Default constructor[2]");
+
+	Vector2D vec2(1.23f, 4.56f);
+
+	test->UnitTest(vec2.X == 1.23f, "Test constructor[1]");
+	test->UnitTest(vec2.Y == 4.56f, "Test constructor[2]");
+
+	Vector2D vec3(vec2);
+
+	test->UnitTest(vec3.X == 1.23f, "Test copy constructor[1]");
+	test->UnitTest(vec3.Y == 4.56f, "Test copy constructor[2]");
+
+	vec = vec3;
+
+	test->UnitTest(vec.X == 1.23f, "Test assignment operator[1]");
+	test->UnitTest(vec.Y == 4.56f, "Test assignment operator[2]");
+
+	return test->GetSuccess();
+}
+#endif
 
 #endif //___BIOSKY_VECTOR2D_HPP__2015___
