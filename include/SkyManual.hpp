@@ -1,10 +1,11 @@
 /**
-* @file SkyStatic.hpp
+* @file SkyManual.hpp
 * @author Spencer Hoffa
 *
 * @copyright 2015 Spencer Hoffa
 *
-* Defines the interface for a static sky (One that does not change).
+* This file contains the class for a static sky where the attributes of the sky
+* are manually placed by the creator of this class.
 */
 /*
 * The zlib/libpng License
@@ -33,8 +34,8 @@
 * This liscense can also be found at: http://opensource.org/licenses/Zlib
 */
 
-#ifndef ___BIOSKY_SKYSTATIC_HPP__2015___
-#define ___BIOSKY_SKYSTATIC_HPP__2015___
+#ifndef ___BIOSKY_SKYMANUAL_HPP__2015___
+#define ___BIOSKY_SKYMANUAL_HPP__2015___
 
 #include "CompileConfig.h"
 #include "Sky.hpp"
@@ -44,21 +45,30 @@ namespace BIO
 	namespace SKY
 	{
 		/**
-		* This defines the interface for a static BIOSky. This sky doesn't 
-		* change.
+		* This sky type has the attributes manually set by the user.
 		*/
-		class SkyStatic : public Sky
+		class SkyManual : public Sky
 		{
 		public:
 			/**
 			* Constructor
+			*
+			* @param skydome A pointer to the rendering skydome geometry.
+			*
+			* @param sunAzimuth The azimuth of the sun.
+			*
+			* @param sunZenith The zenith of the sun.
+			*
+			* @param moonAzimuth The azimuth of the moon.
+			*
+			* @param moonZenith The zenith of the moon.
 			*/
-			BIOSKY_API SkyStatic(IDomeGeometry * skydome);
+			SkyManual(IDomeGeometry * skydome, float sunAzimuth, float sunZenith, float moonAzimuth, float moonZenith);
 
 			/**
 			* Destructor
 			*/
-			BIOSKY_API virtual ~SkyStatic();
+			virtual ~SkyManual();
 
 			/**
 			* Update the sky simulation according to the currently stored time
@@ -67,7 +77,7 @@ namespace BIO
 			* @note By calling this function you are responsible for updating
 			*		the DateTime object on your own.
 			*/
-			BIOSKY_API virtual void Update();
+			virtual void Update();
 
 			/**
 			* Update the sky simulation according to the passed in time. The
@@ -78,7 +88,7 @@ namespace BIO
 			* @param deltaTime The time passed since the last call to this
 			*			Update function.
 			*/
-			BIOSKY_API virtual void Update(float deltaTime);
+			virtual void Update(float deltaTime);
 
 			/**
 			* Update All the sky objects. Calling this function is equivalent
@@ -90,14 +100,14 @@ namespace BIO
 			* @note If an Update functin is called then this function should
 			*		NOT be called every frame.
 			*/
-			BIOSKY_API virtual void UpdateAllSkyObjects();
+			virtual void UpdateAllSkyObjects();
 
 			/**
 			* Update the Moon's position with the current parameters.
 			*
 			* @note This function should NOT be called every frame.
 			*/
-			BIOSKY_API virtual void UpdateMoonPosition();
+			virtual void UpdateMoonPosition();
 
 			/**
 			* Update the position of the North Star according to the current
@@ -106,7 +116,7 @@ namespace BIO
 			* @note If an Update functin is called then this function should
 			*		NOT be called every frame.
 			*/
-			BIOSKY_API virtual void UpdateStarPosition();
+			virtual void UpdateStarPosition();
 
 			/**
 			* Update the rotation of the stars in the sky. This depends on the
@@ -115,57 +125,66 @@ namespace BIO
 			* @note If an Update functin is called then this function should
 			*		NOT be called every frame.
 			*/
-			BIOSKY_API virtual void UpdateStarRotation();
+			virtual void UpdateStarRotation();
 
 			/**
 			* Update the SunPosition with the current parameters.
 			*
 			* @note This function should NOT be called every frame.
 			*/
-			BIOSKY_API virtual void UpdateSunPosition();
+			virtual void UpdateSunPosition();
 		};
 	}//end namespace SKY
 }//end namespace BIO
 
-inline BIO::SKY::SkyStatic::SkyStatic(IDomeGeometry * skydome) : Sky(skydome)
-{}
+inline BIO::SKY::SkyManual::SkyManual(IDomeGeometry * skydome, float sunAzimuth, float sunZenith, float moonAzimuth, float moonZenith) : Sky(skydome)
+{
+	SetSunPosition(sunAzimuth, sunZenith);
 
-inline BIO::SKY::SkyStatic::~SkyStatic()
-{}
+	SetMoonPosition(moonAzimuth, moonZenith);
 
-inline void BIO::SKY::SkyStatic::Update()
+	//SetStarPosition(.855f, .785f);
+
+	UpdateSkyColor();
+}
+
+inline BIO::SKY::SkyManual::~SkyManual()
+{
+}
+
+inline void BIO::SKY::SkyManual::Update()
 {
 	/*DO NOTHING*/
 }
 
-inline void BIO::SKY::SkyStatic::Update(float deltaTime)
+inline void BIO::SKY::SkyManual::Update(float deltaTime)
 {
 	/*DO NOTHING*/
 }
 
-inline void BIO::SKY::SkyStatic::UpdateAllSkyObjects()
+inline void BIO::SKY::SkyManual::UpdateAllSkyObjects()
 {
 	/*DO NOTHING*/
 }
 
-inline void BIO::SKY::SkyStatic::UpdateMoonPosition()
+inline void BIO::SKY::SkyManual::UpdateMoonPosition()
 {
 	/*DO NOTHING*/
 }
 
-inline void BIO::SKY::SkyStatic::UpdateStarPosition()
+inline void BIO::SKY::SkyManual::UpdateStarPosition()
 {
 	/*DO NOTHING*/
 }
 
-inline void BIO::SKY::SkyStatic::UpdateStarRotation()
+inline void BIO::SKY::SkyManual::UpdateStarRotation()
 {
 	/*DO NOTHING*/
 }
 
-inline void BIO::SKY::SkyStatic::UpdateSunPosition()
+inline void BIO::SKY::SkyManual::UpdateSunPosition()
 {
 	/*DO NOTHING*/
 }
 
-#endif //___BIOSKY_SKYSTATIC_HPP__2015___
+#endif //___BIOSKY_SKYMANUAL_HPP__2015___

@@ -261,7 +261,7 @@ void enableStaticSky()
 
 	//setup a static sky
 	deleteSky();
-	sky = new BIO::SKY::SkyStaticManual(dome, _staticSunPos.Azimuth, _staticSunPos.Zenith, _staticMoonPos.Azimuth, _staticMoonPos.Zenith);
+	sky = new BIO::SKY::SkyManual(dome, _staticSunPos.Azimuth, _staticSunPos.Zenith, _staticMoonPos.Azimuth, _staticMoonPos.Zenith);
 }
 
 void enableDynamicSky()
@@ -276,7 +276,7 @@ void enableDynamicSky()
 	setTime();
 	setDate();
 	setGPS();
-	sky = new BIO::SKY::SkyDynamic(dome, &_dateTime, &_gps);
+	sky = new BIO::SKY::SkyCalculatedDynamic(dome, &_dateTime, &_gps);
 }
 
 void enableCalculatedSky()
@@ -291,7 +291,7 @@ void enableCalculatedSky()
 	setTime();
 	setDate();
 	setGPS();
-	sky = new BIO::SKY::SkyStaticCalculated(dome, &_dateTime, &_gps);
+	sky = new BIO::SKY::SkyCalculatedStatic(dome, &_dateTime, &_gps);
 }
 
 

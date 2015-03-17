@@ -1,5 +1,5 @@
 /**
-* @file SkyDynamic.cpp
+* @file SkyCalculatedDynamic.cpp
 * @author Spencer Hoffa
 *
 * @copyright 2015 Spencer Hoffa
@@ -33,36 +33,25 @@
 * This liscense can also be found at: http://opensource.org/licenses/Zlib
 */
 
-#include "SkyDynamic.hpp"
+#include "SkyCalculatedDynamic.hpp"
 
 namespace BIO
 {
 	namespace SKY
 	{
-		SkyDynamic::SkyDynamic(IDomeGeometry * geometry, DateTime * dateTime, GPS * gps) :
-			Sky(geometry),
-			SkyCalculations(dateTime, gps)
+		SkyCalculatedDynamic::SkyCalculatedDynamic(IDomeGeometry * geometry, DateTime * dateTime, GPS * gps) :
+			SkyCalculated(geometry, dateTime, gps)
 		{
-			UpdateSunPosition();
-			UpdateMoonPosition();
-			UpdateStarPosition();
-			UpdateStarRotation();
-			UpdateSkyColor();
+			UpdateAllSkyObjects();
 		}
 
-		SkyDynamic::~SkyDynamic()
+		SkyCalculatedDynamic::~SkyCalculatedDynamic()
 		{
 		}
 
-		void SkyDynamic::Update()
+		void SkyCalculatedDynamic::Update()
 		{
-			UpdateSunPosition();
-
-			UpdateMoonPosition();
-
-			UpdateStarRotation();
-
-			UpdateSkyColor();
+			UpdateAllSkyObjects();
 		}
 	}//end namespace sky
 }//end namespace BIO

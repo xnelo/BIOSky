@@ -1,11 +1,10 @@
 /**
-* @file SkyStaticCalculated.hpp
+* @file SkyCalculated.hpp
 * @author Spencer Hoffa
 *
 * @copyright 2015 Spencer Hoffa
 *
-* This file contains the class for a static sky where the attributes of the sky
-* are calculated according to time and date.
+* Defines the interface for a static sky (One that does not change).
 */
 /*
 * The zlib/libpng License
@@ -34,11 +33,11 @@
 * This liscense can also be found at: http://opensource.org/licenses/Zlib
 */
 
-#ifndef ___BIOSKY_SKYSTATICCALCULATED_HPP__2015___
-#define ___BIOSKY_SKYSTATICCALCULATED_HPP__2015___
+#ifndef ___BIOSKY_SKYCALCULATED_HPP__2015___
+#define ___BIOSKY_SKYCALCULATED_HPP__2015___
 
 #include "CompileConfig.h"
-#include "SkyStatic.hpp"
+#include "Sky.hpp"
 #include "SkyCalculations.hpp"
 
 namespace BIO
@@ -46,35 +45,54 @@ namespace BIO
 	namespace SKY
 	{
 		/**
-		* An implementation of the IBIOSkyStatic interface. This class will 
-		* calculate sun and moon position based on time, date, and position on
-		* the earth.
+		* This defines the interface for a static BIOSky. This sky doesn't 
+		* change.
 		*/
-		class SkyStaticCalculated : public SkyStatic, public SkyCalculations
+		class SkyCalculated : public Sky, public SkyCalculations
 		{
 		public:
 			/**
 			* Constructor
 			*
-			* @param geometry A pointer to the geometry class that renders the 
+			* @param geometry A pointer to the geometry class that renders the
 			*			skydome.
 			*
-			* @param dateTime A pointer to the DateTime object that keeps track 
+			* @param dateTime A pointer to the DateTime object that keeps track
 			*			of the current time. This allows for the user to update
-			*			the date and time in his own application and it is 
+			*			the date and time in his own application and it is
 			*			automatically updated in the library.
 			*
-			* @param gps A pointer to the GPS object the keeps track of the 
+			* @param gps A pointer to the GPS object the keeps track of the
 			*			current GPS location. This allows the user to update
-			*			the GPS location in his own application and it is 
+			*			the GPS location in his own application and it is
 			*			automatically updated in the library.
 			*/
-			BIOSKY_API SkyStaticCalculated(IDomeGeometry * geometry, DateTime * dateTime, GPS * gps);
+			BIOSKY_API SkyCalculated(IDomeGeometry * skydome, DateTime * dateTime, GPS * gps);
 
 			/**
 			* Destructor
 			*/
-			BIOSKY_API virtual ~SkyStaticCalculated();
+			BIOSKY_API virtual ~SkyCalculated();
+
+			/**
+			* Update the sky simulation according to the currently stored time
+			* and location in this object.
+			*
+			* @note By calling this function you are responsible for updating
+			*		the DateTime object on your own.
+			*/
+			BIOSKY_API virtual void Update() = 0;
+
+			/**
+			* Update the sky simulation according to the passed in time. The
+			* DateTime object will be updated first... then the sky will be
+			* updated according to the current time and location stored in this
+			* object.
+			*
+			* @param deltaTime The time passed since the last call to this
+			*			Update function.
+			*/
+			BIOSKY_API virtual void Update(float deltaTime) = 0;
 
 			/**
 			* Update All the sky objects. Calling this function is equivalent
@@ -123,8 +141,14 @@ namespace BIO
 	}//end namespace SKY
 }//end namespace BIO
 
+inline BIO::SKY::SkyCalculated::SkyCalculated(IDomeGeometry * skydome, DateTime * dateTime, GPS * gps) :
+Sky(skydome), SkyCalculations(dateTime, gps)
+{}
 
-inline void BIO::SKY::SkyStaticCalculated::UpdateAllSkyObjects()
+inline BIO::SKY::SkyCalculated::~SkyCalculated()
+{}
+
+inline void BIO::SKY::SkyCalculated::UpdateAllSkyObjects()
 {
 	SkyData skyInfo;
 	skyInfo = CalculateAllSkyData();
@@ -132,27 +156,28 @@ inline void BIO::SKY::SkyStaticCalculated::UpdateAllSkyObjects()
 	SetMoonPosition(skyInfo.moonPos);
 	SetStarPosition(skyInfo.northStarZenith, skyInfo.starRotation);
 	SetSunPosition(skyInfo.sunPos);
+
+	UpdateSkyColor();
 }
 
-
-inline void BIO::SKY::SkyStaticCalculated::UpdateMoonPosition()
+inline void BIO::SKY::SkyCalculated::UpdateMoonPosition()
 {
 	SetMoonPosition(CalculateMoonPosition());
 }
 
-inline void BIO::SKY::SkyStaticCalculated::UpdateStarPosition()
+inline void BIO::SKY::SkyCalculated::UpdateStarPosition()
 {
 	SetStarPosition(CalculateCelestialNorthZenith(), CalculateStarRotation());
 }
 
-inline void BIO::SKY::SkyStaticCalculated::UpdateStarRotation()
+inline void BIO::SKY::SkyCalculated::UpdateStarRotation()
 {
 	SetStarPosition(CalculateCelestialNorthZenith(), CalculateStarRotation());
 }
 
-inline void BIO::SKY::SkyStaticCalculated::UpdateSunPosition()
+inline void BIO::SKY::SkyCalculated::UpdateSunPosition()
 {
 	SetSunPosition(CalculateSunPosition());
 }
 
-#endif //___BIOSKY_SKYSTATICCALCULATED_HPP__2015___
+#endif //___BIOSKY_SKYCALCULATED_HPP__2015___

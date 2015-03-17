@@ -1,5 +1,5 @@
 /**
-* @file SkyDynamic.hpp
+* @file SkyCalculatedDynamic.hpp
 * @author Spencer Hoffa
 *
 * @copyright 2015 Spencer Hoffa
@@ -33,12 +33,11 @@
 * This liscense can also be found at: http://opensource.org/licenses/Zlib
 */
 
-#ifndef ___BIOSKY_SKYDYNAMIC_HPP__2015___
-#define ___BIOSKY_SKYDYNAMIC_HPP__2015___
+#ifndef ___BIOSKY_SKYCALCULATEDDYNAMIC_HPP__2015___
+#define ___BIOSKY_SKYCALCULATEDDYNAMIC_HPP__2015___
 
 #include "CompileConfig.h"
-#include "Sky.hpp"
-#include "SkyCalculations.hpp"
+#include "SkyCalculated.hpp"
 
 namespace BIO
 {
@@ -48,7 +47,7 @@ namespace BIO
 		* Dynamic Sky class that changes with every call of the update 
 		* function.
 		*/
-		class SkyDynamic : public Sky, public SkyCalculations
+		class SkyCalculatedDynamic : public SkyCalculated
 		{
 		public:
 			/**
@@ -67,12 +66,12 @@ namespace BIO
 			*			the GPS location in his own application and it is 
 			*			automatically updated in the library.
 			*/
-			BIOSKY_API SkyDynamic(IDomeGeometry * geometry, DateTime * dateTime, GPS * gps);
+			BIOSKY_API SkyCalculatedDynamic(IDomeGeometry * geometry, DateTime * dateTime, GPS * gps);
 
 			/**
 			* Destructor
 			*/
-			BIOSKY_API virtual ~SkyDynamic();
+			BIOSKY_API virtual ~SkyCalculatedDynamic();
 
 			/**
 			* Update the sky simulation according to the currently stored time
@@ -93,89 +92,15 @@ namespace BIO
 			*			Update function.
 			*/
 			BIOSKY_API virtual void Update(float deltaTime);
-
-			/**
-			* Update All the sky objects. Calling this function is equivalent
-			* to calling all of the UpdateMoonPosition, UpdateStarPosition,
-			* UpdateStarRotation, UpdateSkyColor, and UpdateSunPosition. This
-			* function is however slightly optimized so that calculations do
-			* not need to be made twice.
-			*
-			* @note If an Update functin is called then this function should
-			*		NOT be called every frame.
-			*/
-			BIOSKY_API virtual void UpdateAllSkyObjects();
-
-			/**
-			* Update the Moon's position with the current parameters.
-			*
-			* @note This function should NOT be called every frame.
-			*/
-			BIOSKY_API virtual void UpdateMoonPosition();
-
-			/**
-			* Update the position of the North Star according to the current
-			* latitude of the observer.
-			*
-			* @note If an Update functin is called then this function should
-			*		NOT be called every frame.
-			*/
-			BIOSKY_API virtual void UpdateStarPosition();
-
-			/**
-			* Update the rotation of the stars in the sky. This depends on the
-			* current time and longitude.
-			*
-			* @note If an Update functin is called then this function should
-			*		NOT be called every frame.
-			*/
-			BIOSKY_API virtual void UpdateStarRotation();
-
-			/**
-			* Update the SunPosition with the current parameters.
-			*
-			* @note This function should NOT be called every frame.
-			*/
-			BIOSKY_API virtual void UpdateSunPosition();
 		};
 	}//end namespace SKY
 }//end namespace BIO
 
-inline void BIO::SKY::SkyDynamic::Update(float deltaTime)
+inline void BIO::SKY::SkyCalculatedDynamic::Update(float deltaTime)
 {
 	_dateTime->AddTime(deltaTime);
 
 	Update();
 }
 
-inline void BIO::SKY::SkyDynamic::UpdateAllSkyObjects()
-{
-	SkyData skyInfo;
-	skyInfo = CalculateAllSkyData();
-
-	SetMoonPosition(skyInfo.moonPos);
-	SetStarPosition(skyInfo.northStarZenith, skyInfo.starRotation);
-	SetSunPosition(skyInfo.sunPos);
-}
-
-inline void BIO::SKY::SkyDynamic::UpdateMoonPosition()
-{
-	SetMoonPosition(CalculateMoonPosition());
-}
-
-inline void BIO::SKY::SkyDynamic::UpdateStarPosition()
-{
-	SetStarPosition(CalculateCelestialNorthZenith(), CalculateStarRotation());
-}
-
-inline void BIO::SKY::SkyDynamic::UpdateStarRotation()
-{
-	SetStarPosition(CalculateCelestialNorthZenith(), CalculateStarRotation());
-}
-
-inline void BIO::SKY::SkyDynamic::UpdateSunPosition()
-{
-	SetSunPosition(CalculateSunPosition());
-}
-
-#endif //___BIOSKY_SKYDYNAMIC_HPP__2015___
+#endif //___BIOSKY_SKYCALCULATEDDYNAMIC_HPP__2015___

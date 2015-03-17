@@ -61,10 +61,10 @@
 #include "BIOSkyFunctions.hpp"
 //Sky classes
 #include "Sky.hpp"
-#include "SkyStatic.hpp"
-#include "SkyStaticManual.hpp"
+#include "SkyManual.hpp"
 #include "SkyCalculations.hpp"
-#include "SkyStaticCalculated.hpp"
-#include "SkyDynamic.hpp"
+#include "SkyCalculated.hpp"
+#include "SkyCalculatedStatic.hpp"
+#include "SkyCalculatedDynamic.hpp"
 
 #endif //___BIOSKY_BIOSKY_HPP__2015___
