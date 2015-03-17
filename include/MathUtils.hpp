@@ -78,6 +78,12 @@ namespace BIO
 		numType Distance(numType x1, numType y1, numType x2, numType y2);
 
 		/**
+		*
+		*/
+		template<typename numType>
+		numType RevolutionReduction(numType angle);
+
+		/**
 		* RevolutionReductionDegrees will take an angle and will return the
 		* equivalant value between [0,360).
 		*
@@ -116,6 +122,12 @@ template<typename numType>
 inline numType BIO::MATH::Distance(numType x1, numType y1, numType x2, numType y2)
 {
 	return sqrt(SquaredDistance(x1, y1, x2, y2));
+}
+
+template<typename numType>
+inline numType BIO::MATH::RevolutionReduction(numType angle)
+{
+	return (numType)(angle - floor(angle / PIx2)*PIx2);
 }
 
 template<typename numType>

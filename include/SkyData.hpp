@@ -77,6 +77,11 @@ namespace BIO
 			* Destructor
 			*/
 			BIOSKY_API ~SkyData();
+
+			/**
+			* Assignment operator
+			*/
+			BIOSKY_API SkyData & operator = (const SkyData & other);
 		};
 	}//end namespace SKY
 }//end namespace BIO
@@ -91,6 +96,20 @@ phase(1.0f)
 
 inline BIO::SKY::SkyData::~SkyData()
 {}
+
+inline BIO::SKY::SkyData & BIO::SKY::SkyData::operator = (const SkyData & other)
+{
+	if (this != &other)
+	{
+		moonPos = other.moonPos;
+		northStarZenith = other.northStarZenith;
+		phase = other.phase;
+		sunPos = other.sunPos;
+		starRotation = other.starRotation;
+	}
+
+	return *this;
+}
 
 #endif //___BIOSKY_SKYDATA_HPP__2015___
 

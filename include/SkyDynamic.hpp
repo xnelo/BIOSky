@@ -95,13 +95,40 @@ namespace BIO
 			BIOSKY_API virtual void Update(float deltaTime);
 
 			/**
+			* Update All the sky objects. Calling this function is equivalent
+			* to calling all of the UpdateMoonPosition, UpdateStarPosition,
+			* UpdateStarRotation, UpdateSkyColor, and UpdateSunPosition. This
+			* function is however slightly optimized so that calculations do
+			* not need to be made twice.
+			*
+			* @note If an Update functin is called then this function should
+			*		NOT be called every frame.
+			*/
+			BIOSKY_API virtual void UpdateAllSkyObjects();
+
+			/**
 			* Update the Moon's position with the current parameters.
 			*
 			* @note This function should NOT be called every frame.
 			*/
 			BIOSKY_API virtual void UpdateMoonPosition();
 
+			/**
+			* Update the position of the North Star according to the current
+			* latitude of the observer.
+			*
+			* @note If an Update functin is called then this function should
+			*		NOT be called every frame.
+			*/
 			BIOSKY_API virtual void UpdateStarPosition();
+
+			/**
+			* Update the rotation of the stars in the sky. This depends on the
+			* current time and longitude.
+			*
+			* @note If an Update functin is called then this function should
+			*		NOT be called every frame.
+			*/
 			BIOSKY_API virtual void UpdateStarRotation();
 
 			/**
@@ -119,6 +146,16 @@ inline void BIO::SKY::SkyDynamic::Update(float deltaTime)
 	_dateTime->AddTime(deltaTime);
 
 	Update();
+}
+
+inline void BIO::SKY::SkyDynamic::UpdateAllSkyObjects()
+{
+	SkyData skyInfo;
+	skyInfo = CalculateAllSkyData();
+
+	SetMoonPosition(skyInfo.moonPos);
+	SetStarPosition(skyInfo.northStarZenith, skyInfo.starRotation);
+	SetSunPosition(skyInfo.sunPos);
 }
 
 inline void BIO::SKY::SkyDynamic::UpdateMoonPosition()

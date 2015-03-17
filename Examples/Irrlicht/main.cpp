@@ -140,9 +140,10 @@ void setDate()
 
 	if (sky)
 	{
-		sky->UpdateSunPosition();
-		sky->UpdateMoonPosition();
-		sky->UpdateSkyColor();
+		//sky->UpdateSunPosition();
+		//sky->UpdateMoonPosition();
+		//sky->UpdateSkyColor();
+		sky->UpdateAllSkyObjects();
 	}
 }
 
@@ -176,9 +177,10 @@ void setTime()
 
 	if (sky)
 	{
-		sky->UpdateSunPosition();
-		sky->UpdateMoonPosition();
-		sky->UpdateSkyColor();
+		//sky->UpdateSunPosition();
+		//sky->UpdateMoonPosition();
+		//sky->UpdateSkyColor();
+		sky->UpdateAllSkyObjects();
 	}
 }
 
@@ -200,9 +202,10 @@ void setGPS()
 
 	if (sky)
 	{
-		sky->UpdateSunPosition();
-		sky->UpdateMoonPosition();
-		sky->UpdateSkyColor();
+		//sky->UpdateSunPosition();
+		//sky->UpdateMoonPosition();
+		//sky->UpdateSkyColor();
+		sky->UpdateAllSkyObjects();
 	}
 }
 

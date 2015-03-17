@@ -119,6 +119,15 @@ namespace BIO
 			BIOSKY_API virtual ~SkyCalculations();
 
 			/**
+			* Calculates all the sky data according to the current settings of
+			* both the DateTime and the GPS coordinates.
+			*
+			* @return Returns a SkyData object with all the data needed to 
+			*			update a sky model.
+			*/
+			BIOSKY_API SkyData CalculateAllSkyData();
+
+			/**
 			* Calculate the position of the moon.
 			*
 			* @return Returns a SkyPosition object with the azimuth and the 
@@ -189,6 +198,19 @@ namespace BIO
 		};
 	}//end namespace SKY
 }//end namespace BIO
+
+inline BIO::SKY::SkyData BIO::SKY::SkyCalculations::CalculateAllSkyData()
+{
+	return BIO::SKY::CalculateSkyData(
+		_dateTime->GetTimeHours(),
+		_dateTime->GetUTCOffset(),
+		_dateTime->GetMonth(),
+		_dateTime->GetDay(),
+		_dateTime->GetYear(),
+		_gps->GetLatitudeRadians(),
+		_gps->GetLongitudeRadians()
+		);
+}
 
 inline BIO::SKY::SkyPosition BIO::SKY::SkyCalculations::CalculateMoonPosition()
 {

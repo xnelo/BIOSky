@@ -117,7 +117,7 @@ namespace BIO
 		* @return Returns a SkyData structure with all of the data needed to 
 		*			position the sun, moon, stars, and moon phase.
 		*/
-		//BIOSKY_API SkyData CalculateSkyData(float standardTime, float UTCoffset, DATE_MONTH month, unsigned int day, unsigned int year, float latitude, float longitude);
+		BIOSKY_API SkyData CalculateSkyData(float standardTime, float UTCoffset, DATE_MONTH month, unsigned int day, unsigned int year, float latitude, float longitude);
 
 		/**
 		* Calculates the rotation angle of the stars around the celestial north
@@ -240,6 +240,8 @@ namespace BIO
 		*/
 		BIOSKY_API unsigned char * CreateSunTexture(int sideLength);
 
+		BIOSKY_API int DaysSinceJan02000(DATE_MONTH month, unsigned int day, unsigned int year);
+
 		/**
 		* Run tests on the BIOSky library.
 		*
@@ -272,6 +274,15 @@ inline float BIO::SKY::CalculateCelestialNorthPoleZenith(float latitude)
 
 	//return SkyPosition(MATH::PIf, MATH::PId2f - latitude);//azimuth, MATH::PId2f - altitude);
 	return MATH::PId2f - latitude;
+}
+
+inline int BIO::SKY::DaysSinceJan02000(DATE_MONTH month, unsigned int day, unsigned int year)
+{
+	int monthint = Date::MonthToInt(month);
+
+	int d = (367 * (int)year - (7 * ((int)year + ((monthint + 9) / 12))) / 4 + (275 * monthint) / 9 + (int)day - 730530);
+
+	return d;
 }
 
 #endif //___BIOSKY_BIOSKYFUNCTIONS_HPP__2015___

@@ -66,6 +66,11 @@ namespace BIO
 			*/
 			BIOSKY_API SkyPosition(float azimuth, float zenith);
 
+			/**
+			* Assignment operator
+			*/
+			BIOSKY_API SkyPosition & operator = (const SkyPosition & other);
+
 
 #if BIOSKY_TESTING == 1
 			/**
@@ -93,6 +98,17 @@ Azimuth(azimuth),
 Zenith(zenith)
 {}
 
+inline BIO::SKY::SkyPosition & BIO::SKY::SkyPosition::operator = (const SkyPosition & other)
+{
+	if (this != &other)
+	{
+		Azimuth = other.Azimuth;
+		Zenith = other.Zenith;
+	}
+
+	return *this;
+}
+
 #if BIOSKY_TESTING == 1
 inline bool BIO::SKY::SkyPosition::Test(XNELO::TESTING::Test * test)
 {
@@ -108,6 +124,11 @@ inline bool BIO::SKY::SkyPosition::Test(XNELO::TESTING::Test * test)
 
 	test->UnitTest(skyPos2.Azimuth, 2.34f, tolerance, "Test constructor[1]");
 	test->UnitTest(skyPos2.Zenith, 1.23f, tolerance, "Test constructor[2]");
+
+	skyPos = skyPos2;
+
+	test->UnitTest(skyPos.Azimuth, 2.34f, tolerance, "Test Assignment[1]");
+	test->UnitTest(skyPos.Zenith, 1.23f, tolerance, "Test Assignment[2]");
 
 	return test->GetSuccess();
 }
