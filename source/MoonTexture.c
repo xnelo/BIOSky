@@ -8,7 +8,7 @@ static const struct {
 	char         	*comment;
 	unsigned char	 pixel_data[256 * 256 * 4];
 } moonImageData 
-/*
+//*
 = {
 256, 256, 4,
 "Converted By PPMtoC.py",
