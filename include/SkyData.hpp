@@ -67,6 +67,11 @@ namespace BIO
 			* new moon and 1 is full moon.
 			*/
 			float phase;
+			/**
+			* Moon's visibility. This changes with proximity to sun and if the 
+			* sun is above the horizon or not. The value will be between [0,1].
+			*/
+			float moonVisibility;
 
 			/**
 			* Constructor
@@ -91,7 +96,8 @@ moonPos(),
 sunPos(),
 starRotation(0.0f),
 northStarZenith(0.0f),
-phase(1.0f)
+phase(1.0f),
+moonVisibility(1.0f)
 {}
 
 inline BIO::SKY::SkyData::~SkyData()
@@ -106,6 +112,7 @@ inline BIO::SKY::SkyData & BIO::SKY::SkyData::operator = (const SkyData & other)
 		phase = other.phase;
 		sunPos = other.sunPos;
 		starRotation = other.starRotation;
+		moonVisibility = other.moonVisibility;
 	}
 
 	return *this;

@@ -184,6 +184,22 @@ namespace BIO
 			
 		}
 
+		float CalculateMoonVisibility(float SunAzimuth, float SunZenith, float MoonAzimuth, float MoonZenith)
+		{
+			const float SunDown = 1.6580f;
+			const float SunUp = 1.4835f;
+			const float SunDownValue = 1.0f;
+			const float SunUpValue = 0.06f;
+
+			if (SunZenith > SunDown)
+				return SunDownValue;
+
+			if (SunZenith < SunUp)
+				return SunUpValue;
+
+			return (SunZenith - SunUp) / (SunDown - SunUp);
+		}
+
 		SkyData CalculateSkyData(float standardTime, float UTCoffset, DATE_MONTH month, unsigned int day, unsigned int year, float latitude, float longitude)
 		{
 			SkyData rtn;
@@ -197,6 +213,10 @@ namespace BIO
 			rtn.starRotation = CalculateStarRotation(standardTime, UTCoffset);
 
 			rtn.phase = CalculateMoonPhase(standardTime, UTCoffset, month, day, year);
+
+			rtn.moonVisibility = CalculateMoonVisibility(
+				rtn.sunPos.Azimuth, rtn.sunPos.Zenith, 
+				rtn.moonPos.Azimuth, rtn.moonPos.Zenith);
 
 			return rtn;
 		}

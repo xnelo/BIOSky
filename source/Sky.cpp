@@ -38,7 +38,7 @@
 
 #include "../source/MoonTexture.c"
 
-#include <iostream>
+#include <algorithm>
 
 namespace BIO
 {
@@ -135,14 +135,6 @@ namespace BIO
 			}
 			//---------------------------------------------------
 
-			static int counter = 0;
-			counter++;
-			if (counter > 10)
-			{
-				std::cout << "MOON Quarter: " << quarter << " width: " << width << std::endl;
-				counter = 0;
-			}
-
 			for (int y = 1; y <= height; y++)
 			{
 				int x1 = x0 - (dx - 1);
@@ -204,6 +196,22 @@ namespace BIO
 			float z = sin(lunarZenith) * cos(lunarAzimuth);
 
 			_skydome->SetMoonPosition(x, y, z);
+		}
+
+		void Sky::SetMoonVisibility(float visibility)
+		{
+			//lock image
+			_skydome->LockMoonTexture();
+			//update pixels as needed
+			unsigned char * pixel = _skydome->GetMoonTexturePixels();
+
+			for (int x = 3; x < ((moonImageData.width * moonImageData.height * 4) - 3); x = x + 4)
+			{
+				pixel[x] = std::min(pixel[x],(unsigned char)(255 * visibility));
+			}
+
+			//unlock image
+			_skydome->UnlockMoonTexture();
 		}
 
 		void Sky::SetStarPosition(float zenith, float rotation)

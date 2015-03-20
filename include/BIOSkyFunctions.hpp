@@ -119,6 +119,27 @@ namespace BIO
 		BIOSKY_API SkyPosition CalculateMoonPosition(float standardTime, float UTCoffset, DATE_MONTH month, unsigned int day, unsigned int year, float latitude, float longitude);
 
 		/**
+		* Calculate the visibility of the moon.
+		*
+		* @param SunAzimuth The azimuth of the sun in radians. Values muste be
+		*			between [0, 2Pi].
+		*
+		* @param SunZenith The zenith of the sun in radians. Values must be 
+		*			between [0, Pi].
+		*
+		* @param MoonAzimuth The azimuth of the moon in radians. Values must be
+		*			between [0, 2Pi].
+		*
+		* @param MoonZenith The zenith of the moon in radians. Values must be 
+		*			between [0, Pi].
+		*
+		* @return Returns the visibility of the sun. It will be a value between
+		*			[0,1]. 0 is completely invisible and 1 is completely 
+		*			visible.
+		*/
+		BIOSKY_API float CalculateMoonVisibility(float SunAzimuth, float SunZenith, float MoonAzimuth, float MoonZenith);
+
+		/**
 		* Calculate all of the information needed for the positioning of 
 		* celestial objects in the BIOSky library.
 		*

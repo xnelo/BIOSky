@@ -159,6 +159,8 @@ inline void BIO::SKY::SkyCalculated::UpdateAllSkyObjects()
 
 	SetMoonPhase(skyInfo.phase);
 
+	SetMoonVisibility(skyInfo.moonVisibility);
+
 	UpdateSkyColor();
 }
 

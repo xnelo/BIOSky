@@ -253,6 +253,15 @@ namespace BIO
 			BIOSKY_API virtual void SetMoonPosition(float lunarAzimuth, float lunarZenith);
 
 			/**
+			* Set the visibility of the moon.
+			*
+			* @param visibility A value between [0, 1] for the visibility of
+			*			the moon. 0 the moon is completely invisible, and 1
+			*			the moon is completely visible.
+			*/
+			BIOSKY_API virtual void SetMoonVisibility(float visibility);
+
+			/**
 			* Set the position of the Stars.
 			*
 			* @param zenith The zenith is the only thing that changes on the
