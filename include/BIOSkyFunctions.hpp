@@ -49,6 +49,20 @@ namespace BIO
 	namespace SKY
 	{
 		/**
+		* Constant for the ratio of the sun width/height (should be a square) 
+		* to the radius of the dome. Multiply this constant with the dome 
+		* radius to get a decent size for the sun.
+		*/
+		const float DomeRadiusToSunRatio = 0.15f;
+
+		/**
+		* Constant for the ratio of the moon width/height (should be a square)
+		* to the radius of the dome. Multiply this constant with the dome
+		* radius to get a decent size for the moon.
+		*/
+		const float DomeRadiusToMoonRatio = 0.075f;
+
+		/**
 		* Calculate the Zenith of the celestial North Pole.
 		*
 		* @param latitude The latitude of the location we are calculating

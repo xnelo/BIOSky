@@ -120,8 +120,8 @@ _nightTexture(NULL)
 	delete night;
 
 	//Create the sun
-	const float _domeRadiusToSunBillboardRatio = 0.15f;
-	_sun = sm->addBillboardSceneNode(this, irr::core::dimension2d<irr::f32>(_radius * _domeRadiusToSunBillboardRatio, _radius *_domeRadiusToSunBillboardRatio));
+	
+	_sun = sm->addBillboardSceneNode(this, irr::core::dimension2d<irr::f32>(_radius * BIO::SKY::DomeRadiusToSunRatio, _radius * BIO::SKY::DomeRadiusToSunRatio));
 	SetSunPosition(0, 1, 0);
 
 	int sizeOfTexture = 128;//50;
@@ -142,8 +142,8 @@ _nightTexture(NULL)
 	//-----------------------------------------------------
 
 	//Create the Moon -------------------------------------
-	const float _domeRadiusToMoonBillboardRatio = 0.15f;
-	_moon = sm->addBillboardSceneNode(this, irr::core::dimension2d<irr::f32>(_radius * _domeRadiusToMoonBillboardRatio, _radius *_domeRadiusToMoonBillboardRatio));
+	
+	_moon = sm->addBillboardSceneNode(this, irr::core::dimension2d<irr::f32>(_radius * BIO::SKY::DomeRadiusToMoonRatio, _radius * BIO::SKY::DomeRadiusToMoonRatio));
 	SetMoonPosition(0, 1, 0);
 
 	int moonTextureWidth = 0;
