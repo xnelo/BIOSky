@@ -157,6 +157,8 @@ inline void BIO::SKY::SkyCalculated::UpdateAllSkyObjects()
 	SetStarPosition(skyInfo.northStarZenith, skyInfo.starRotation);
 	SetSunPosition(skyInfo.sunPos);
 
+	SetMoonPhase(skyInfo.phase);
+
 	UpdateSkyColor();
 }
 

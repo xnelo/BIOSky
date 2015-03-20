@@ -57,99 +57,248 @@ namespace BIO
 {
 	namespace SKY
 	{
-		//forward declarations
-		//SkyPosition __CalculateMoonPosition_INTERNAL(float d, float UT, float latitude, float longitude, float * v_out);
-		int __CalculateMoonPosition_INTERNAL(float d, float * RA_out, float * DEC_out);
-		//SkyPosition __CalculateSunPosition_INTERNAL(float d, float UT, float latitude, float longitude, float * sunLong_out);
-		int __CalculateSunPosition_INTERNAL(float d, float * RA_out, float * DEC_out);
-		SkyPosition Converts(float RA, float Dec, float d, float UT, float latitude, float longitude);
+		float CalculateMoonPhase(float standardTime, float UTCoffset, DATE_MONTH month, unsigned int day, unsigned int year)
+		{
+			float UT = standardTime - UTCoffset;	// universal time
+
+			float d = (float)DaysSinceJan02000(month, day, year);
+			d = d + (UT / 24.0f);
+
+			//Moon Phase from: http://www.aphayes.pwp.blueyonder.co.uk/library/moon.js
+
+			//float j = d + 2451544.5;
+			float T = (d - 1.5f) / 36525;
+			float T2 = T*T;
+			float T3 = T2*T;
+			float T4 = T3*T;
+			// Moons mean elongation Meeus second edition
+			float D = 297.8501921f + 445267.1114034f*T - 0.0018819f*T2 + T3 / 545868.0f - T4 / 113065000.0f;
+			// Moons mean anomaly M' Meeus second edition
+			float MP = 134.9633964f + 477198.8675055f*T + 0.0087414f*T2 + T3 / 69699.0f - T4 / 14712000.0f;
+			// Suns mean anomaly
+			float M = 357.5291092f + 35999.0502909f*T - 0.0001536f*T2 + T3 / 24490000.0f;
+			// phase angle
+			//float pa = 180.0 - D - 6.289*sin(MP*MATH::DegreesToRadiansf) + 2.1*sin(M* MATH::DegreesToRadiansf) - 1.274*sin((2 * D - MP) * MATH::DegreesToRadiansf) - 0.658*sin((2 * D) * MATH::DegreesToRadiansf) - 0.214*sin((2 * MP) * MATH::DegreesToRadiansf) - 0.11*sin(D*MATH::DegreesToRadiansf);
+			//modified
+			float pa = 0.0f + D + 6.289f*sin(MP*MATH::DegreesToRadiansf) - 2.1f*sin(M* MATH::DegreesToRadiansf) + 1.274f*sin((2 * D - MP) * MATH::DegreesToRadiansf) + 0.658f*sin((2 * D) * MATH::DegreesToRadiansf) + 0.214f*sin((2 * MP) * MATH::DegreesToRadiansf) + 0.11f*sin(D*MATH::DegreesToRadiansf);
+			return MATH::RevolutionReductionDegrees(pa);
+		}
 
 		SkyPosition CalculateMoonPosition(float standardTime, float UTCoffset, DATE_MONTH month, unsigned int day, unsigned int year, float latitude, float longitude)
 		{
+			//Method from http://www.stjarnhimlen.se/comp/ppcomp.html
+			// by: Paul Schlyter, Stockholm, Sweden
+
 			//int monthint = Date::MonthToInt(month);
 			float UT = standardTime - UTCoffset;	// universal time
-
+			//
 			float d = (float)DaysSinceJan02000(month, day, year);//(float)(367 * (int)year - (7 * ((int)year + ((monthint + 9) / 12))) / 4 + (275 * monthint) / 9 + (int)day - 730530);
 			d = d + (UT / 24.0f);
 
-			float ra, dec;
-			__CalculateMoonPosition_INTERNAL(d, &ra, &dec);
+			//Calculate the Moon Position ----------------------------------------------
+			float N = MATH::RevolutionReductionDegrees(125.1228f - 0.0529538083f  * d);//in degrees (Long asc.node)
+			float i = 5.1454f;//In degrees (Inclination)
+			float w = MATH::RevolutionReductionDegrees(318.0634f + 0.1643573223f  * d);//in degrees (Arg.of perigee)
+			float a = 60.2666f;//                                (Mean distance)
+			float e = 0.054900f;//                               (Eccentricity)
+			float M = MATH::RevolutionReductionDegrees(115.3654f + 13.0649929509f * d);//in degrees (Mean anomaly)
 
-			return Converts(ra, dec, d, UT, latitude, longitude);//__CalculateMoonPosition_INTERNAL(d, UT, latitude, longitude, &v);
+			//BIO_LOG_CRITICAL(std::endl <<
+			//	"N: " << N << std::endl <<
+			//	"i: " << i << std::endl <<
+			//	"w: " << w << std::endl <<
+			//	"a: " << a << std::endl <<
+			//	"e: " << e << std::endl <<
+			//	"M: " << M << std::endl
+			//	);
+
+			float E = M + (180 / MATH::PIf) * e * sin(M * MATH::DegreesToRadiansf) * (1 + e * cos(M * MATH::DegreesToRadiansf));//in degrees
+			//BIO_LOG_CRITICAL("E0: " << E);
+
+			float x = a * (cos(E * MATH::DegreesToRadiansf) - e);
+			float y = a * sqrt(1 - e*e) * sin(E * MATH::DegreesToRadiansf);
+			//BIO_LOG_CRITICAL("x: " << x << " y: " << y);
+
+			float r = sqrt(x*x + y*y);// = 60.67134 Earth radii
+			float v = MATH::RevolutionReductionDegrees(atan2(y, x) * MATH::RadiansToDegreesf);// in degrees = 259.8605_deg
+			//BIO_LOG_CRITICAL("r: " << r << " v: " << v);
+
+			float xeclip = r * (cos(N* MATH::DegreesToRadiansf) * cos((v + w)* MATH::DegreesToRadiansf) - sin(N* MATH::DegreesToRadiansf) * sin((v + w)* MATH::DegreesToRadiansf) * cos(i* MATH::DegreesToRadiansf));
+			float yeclip = r * (sin(N* MATH::DegreesToRadiansf) * cos((v + w) * MATH::DegreesToRadiansf) + cos(N* MATH::DegreesToRadiansf) * sin((v + w)* MATH::DegreesToRadiansf) * cos(i* MATH::DegreesToRadiansf));
+			float zeclip = r * sin((v + w)* MATH::DegreesToRadiansf) * sin(i* MATH::DegreesToRadiansf);
+			//BIO_LOG_CRITICAL("xeclip: " << xeclip << " yeclip: " << yeclip << " zeclip: " << zeclip);
+
+			//geocentric longetude and latitude
+			float lonecl = atan2(yeclip, xeclip) * MATH::RadiansToDegreesf;//in degrees
+			float latecl = atan2(zeclip, sqrt(xeclip*xeclip + yeclip*yeclip))* MATH::RadiansToDegreesf;//in degrees
+			//BIO_LOG_CRITICAL("lonecl: " << lonecl << " latecl: " << latecl);
+
+			float xh = r * cos(lonecl * MATH::DegreesToRadiansf) * cos(latecl * MATH::DegreesToRadiansf);
+			float yh = r * sin(lonecl * MATH::DegreesToRadiansf) * cos(latecl * MATH::DegreesToRadiansf);
+			float zh = r * sin(latecl * MATH::DegreesToRadiansf);
+
+			float ecl = 23.4393f - 3.563E-7f * d; //in degrees
+
+			float xequat = xh;
+			float yequat = yh * cos(ecl * MATH::DegreesToRadiansf) - zh * sin(ecl * MATH::DegreesToRadiansf);
+			float zequat = yh * sin(ecl * MATH::DegreesToRadiansf) + zh * cos(ecl * MATH::DegreesToRadiansf);
+
+			float RA = MATH::RevolutionReductionDegrees(atan2(yequat, xequat) * MATH::RadiansToDegreesf); //in degrees
+			float Dec = atan2(zequat, sqrt(xequat*xequat + yequat*yequat)) * MATH::RadiansToDegreesf; //in degrees
+			
+			//BIO_LOG_CRITICAL("RA: " << RA << " Dec: " << Dec);
+
+			float ws = MATH::RevolutionReductionDegrees(282.9404f + 4.70935E-5f   * d); //in degrees (longitude of perihelion)
+			float Ms = MATH::RevolutionReductionDegrees(356.0470f + 0.9856002585f * d);//in degrees (mean anomaly)
+
+			float L = MATH::RevolutionReductionDegrees(ws + Ms);//mean longitude in degrees
+			//BIO_LOG_CRITICAL("L: " << L);
+
+			float GMST0 = (L / 15.0f) + 12.0f;//in hours
+			//BIO_LOG_CRITICAL("GMST0: " << GMST0);
+			//float GMST = GMST0 + UT;//in hours
+
+			//BIO_LOG_CRITICAL("GMST0: " << GMST0);
+
+			float SIDTIME = GMST0 + UT + (longitude * MATH::RadiansToDegreesf) / 15.0f;
+			//BIO_LOG_CRITICAL("SIDTIME: " << SIDTIME);
+
+			float HA = MATH::RevolutionReductionDegrees((SIDTIME * 15.0f) - RA);//in degrees
+			//BIO_LOG_CRITICAL("HA: " << HA);
+
+			x = cos(HA * MATH::DegreesToRadiansf) * cos(Dec * MATH::DegreesToRadiansf);
+			y = sin(HA * MATH::DegreesToRadiansf) * cos(Dec * MATH::DegreesToRadiansf);
+			float z = sin(Dec * MATH::DegreesToRadiansf);
+
+			float xhor = x * sin(latitude) - z * cos(latitude);
+			float yhor = y;
+			float zhor = x * cos(latitude) + z * sin(latitude);
+
+			float azimuth = atan2(yhor, xhor) + MATH::PIf;
+			float altitude = asin(zhor);
+			//--------------------------------------------------------------------------
+
+			//(*v_out) = v;
+
+			return SkyPosition(azimuth, MATH::PId2f - altitude);
+			
 		}
 
 		SkyData CalculateSkyData(float standardTime, float UTCoffset, DATE_MONTH month, unsigned int day, unsigned int year, float latitude, float longitude)
 		{
-			//int monthint = Date::MonthToInt(month);
-			float UT = standardTime - UTCoffset;	// universal time
-
-			float d = (float)DaysSinceJan02000(month, day, year); //(float)(367 * (int)year - (7 * ((int)year + ((monthint + 9) / 12))) / 4 + (275 * monthint) / 9 + (int)day - 730530);
-			d = d + (UT / 24.0f);
-
 			SkyData rtn;
 
-			float RAs, RAm, DECs, DECm;
+			rtn.moonPos = CalculateMoonPosition(standardTime, UTCoffset, month, day, year, latitude, longitude);
 
-			__CalculateMoonPosition_INTERNAL(d, &RAm, &DECm);
-
-			rtn.moonPos = Converts(RAm, DECm, d, UT, latitude, longitude);//__CalculateMoonPosition_INTERNAL(d, UT, latitude, longitude, &v);
-
-			__CalculateSunPosition_INTERNAL(d, &RAs, &DECs);
-			rtn.sunPos = Converts(RAs, DECs, d, UT, latitude, longitude);//__CalculateSunPosition_INTERNAL(d, UT, latitude, longitude,&sunLong);
+			rtn.sunPos = CalculateSunPosition(standardTime, UTCoffset, month, day, year, latitude, longitude);
 
 			rtn.northStarZenith = CalculateCelestialNorthPoleZenith(latitude);
 			
 			rtn.starRotation = CalculateStarRotation(standardTime, UTCoffset);
 
-			//Moon Phase from: http://www.aphayes.pwp.blueyonder.co.uk/library/moon.js
-			
-			float j = d + 2451543.5;
-			float T = (j - 2451545.0) / 36525;
-			float T2 = T*T;
-			float T3 = T2*T;
-			float T4 = T3*T;
-			// Moons mean elongation Meeus first edition
-			// var D=297.8502042+445267.1115168*T-0.0016300*T2+T3/545868.0-T4/113065000.0;
-			// Moons mean elongation Meeus second edition
-			float D = 297.8501921 + 445267.1114034*T - 0.0018819*T2 + T3 / 545868.0 - T4 / 113065000.0;
-			// Moons mean anomaly M' Meeus first edition
-			// var MP=134.9634114+477198.8676313*T+0.0089970*T2+T3/69699.0-T4/14712000.0;
-			// Moons mean anomaly M' Meeus second edition
-			float MP = 134.9633964 + 477198.8675055*T + 0.0087414*T2 + T3 / 69699.0 - T4 / 14712000.0;
-			// Suns mean anomaly
-			float M = 357.5291092 + 35999.0502909*T - 0.0001536*T2 + T3 / 24490000.0;
-			// phase angle
-			float pa = 180.0 - D - 6.289*sin(MP*MATH::DegreesToRadiansf) + 2.1*sin(M* MATH::DegreesToRadiansf) - 1.274*sin((2 * D - MP) * MATH::DegreesToRadiansf) - 0.658*sin((2 * D) * MATH::DegreesToRadiansf) - 0.214*sin((2 * MP) * MATH::DegreesToRadiansf) - 0.11*sin(D*MATH::DegreesToRadiansf);
-			//(1.0+cosd(mp))/2.0
-			rtn.phase = MATH::RevolutionReductionDegrees(pa);//(1.0f + cos(MATH::RevolutionReductionDegrees(pa) * MATH::DegreesToRadiansf)) * 0.5;
-
-			//moon bright limb
-			//from jean meeus
-			//float tmp = MATH::RevolutionReduction(atan2(cos(DECs) * sin(RAs - RAm), sin(DECs) * cos(DECm) - cos(DECs)* sin(DECm) * cos(RAs - RAm)));
-
-			//std::cout << "TMP = " << tmp * MATH::RadiansToDegreesf << std::endl;
+			rtn.phase = CalculateMoonPhase(standardTime, UTCoffset, month, day, year);
 
 			return rtn;
 		}
 
 		SkyPosition CalculateSunPosition(float standardTime, float UTCoffset, DATE_MONTH month, unsigned int day, unsigned int year, float latitude, float longitude)
 		{
+			//Method from http://www.stjarnhimlen.se/comp/ppcomp.html
+			// by: Paul Schlyter, Stockholm, Sweden
 			//int monthint = Date::MonthToInt(month);
 			float UT = standardTime - UTCoffset;	// universal time
-
-			float d = (float)DaysSinceJan02000(month, day, year); //(float)(367 * (int)year - (7 * ((int)year + ((monthint + 9) / 12))) / 4 + (275 * monthint) / 9 + (int)day - 730530);
+			//
+			float d = (float)DaysSinceJan02000(month, day, year);//(float)(367 * (int)year - (7 * ((int)year + ((monthint + 9) / 12))) / 4 + (275 * monthint) / 9 + (int)day - 730530);
 			d = d + (UT / 24.0f);
 
-			//float sunLong;
-			float ra, dec;
-			__CalculateSunPosition_INTERNAL(d, &ra, &dec);
-			return Converts(ra, dec, d, UT, latitude, longitude);//__CalculateSunPosition_INTERNAL(d, UT, latitude, longitude, &sunLong);
+			float w = MATH::RevolutionReductionDegrees(282.9404f + 4.70935E-5f   * d); //in degrees (longitude of perihelion)
+			float a = 1.000000f;//mean distance in a.u.
+			float e = 0.016709f - 1.151E-9f * d; //(eccentricity)
+			float M = MATH::RevolutionReductionDegrees(356.0470f + 0.9856002585f * d);//in degrees (mean anomaly)
+
+			float oblecl = MATH::RevolutionReductionDegrees(23.4393f - 3.563E-7f * d);//in degrees
+			float L = MATH::RevolutionReductionDegrees(w + M);//mean longitude in degrees
+
+			float E = M + (180 / MATH::PIf) * e * sin(M * MATH::DegreesToRadiansf) * (1 + e * cos(M*MATH::DegreesToRadiansf));//in degrees
+			E = MATH::RevolutionReductionDegrees(E);
+			//BIO_LOG_CRITICAL("E: " << E);
+
+			float x = cos(E * MATH::DegreesToRadiansf) - e;
+			float y = sin(E * MATH::DegreesToRadiansf) * sqrt(1 - e*e);
+
+			//BIO_LOG_CRITICAL("x: " << x << " y: " << y);
+
+			float r = sqrt(x*x + y*y);
+			float v = atan2(y, x) * MATH::RadiansToDegreesf;//in degrees
+
+			//BIO_LOG_CRITICAL("r: " << r << " v: " << v);
+
+			//--------------------------------------------------------------------------------
+			//--------------------------------------------------------------------------------
+			//--------------------------------------------------------------------------------
+			//
+			//				Need lon for moon phase
+			//
+			//--------------------------------------------------------------------------------
+			//--------------------------------------------------------------------------------
+			//--------------------------------------------------------------------------------
+			float lon = MATH::RevolutionReductionDegrees(v + w);//longitude of sun in degrees
+
+			//BIO_LOG_CRITICAL("long: " << lon);
+
+			x = r * cos(lon * MATH::DegreesToRadiansf);//geocentric longitude
+			y = r * sin(lon * MATH::DegreesToRadiansf);//geocentric latitude
+			float z = 0.0;//sun is always zero
+
+			//BIO_LOG_CRITICAL("x: " << x << " y: " << y << " z: " << z);
+
+			float xequat = x;
+			float yequat = y * cos(23.4406f * MATH::DegreesToRadiansf) - z * sin(23.4406f * MATH::DegreesToRadiansf);
+			float zequat = y * sin(23.4406f * MATH::DegreesToRadiansf) + z * cos(23.4406f * MATH::DegreesToRadiansf);
+
+			//BIO_LOG_CRITICAL("xequat: " << xequat << " yequat: " << yequat << " zequat: " << zequat);
+
+			float RA = atan2(yequat, xequat) * MATH::RadiansToDegreesf; //In Degrees 
+			float Dec = atan2(zequat, sqrt(xequat*xequat + yequat*yequat)) * MATH::RadiansToDegreesf;//in Degrees
+			//BIO_LOG_CRITICAL("RA: " << RA << " Dec: " << Dec);
+
+			float GMST0 = (L / 15.0f) + 12.0f;//in hours
+			//float GMST = GMST0 + UT;//in hours
+
+			//BIO_LOG_CRITICAL("GMST0: " << GMST0);
+
+			float SIDTIME = GMST0 + UT + (longitude * MATH::RadiansToDegreesf) / 15.0f;
+
+			//BIO_LOG_CRITICAL("SidTime: " << SIDTIME);
+
+			float HA = (SIDTIME * 15.0f) - RA;//ha is in degrees
+
+			//BIO_LOG_CRITICAL("HA: " << HA);
+
+			x = cos(HA * MATH::DegreesToRadiansf) * cos(Dec * MATH::DegreesToRadiansf);
+			y = sin(HA * MATH::DegreesToRadiansf) * cos(Dec * MATH::DegreesToRadiansf);
+			z = sin(Dec * MATH::DegreesToRadiansf);
+
+			//BIO_LOG_CRITICAL("x: " << x << " y: " << y << " z: " << z);
+
+			float xhor = x * sin(latitude) - z * cos(latitude);
+			float yhor = y;
+			float zhor = x * cos(latitude) + z * sin(latitude);
+
+			//BIO_LOG_CRITICAL("xhor: " << xhor << " yhor: " << yhor << " zhor: " << zhor);
+
+			float azimuth = atan2(yhor, xhor) + MATH::PIf;
+			float altitude = asin(zhor);//atan2(zhor, sqrt(xhor*xhor + yhor*yhor));
+
+			//BIO_LOG_CRITICAL("azimuth: " << azimuth* MATH::BIO_180_PIf << " altitude: " << altitude* MATH::BIO_180_PIf);
+
+			return SkyPosition(azimuth, MATH::PId2f - altitude);
 		}
 
 		float CalculateStarRotation(float standardTime, float UTCoffset)
 		{
 			//15 degrees in radians.
-			const float _15Degrees = 0.2617993878;//15.0f * MATH::DegreesToRadiansf;
+			const float _15Degrees = 0.2617993878f;//15.0f * MATH::DegreesToRadiansf;
 
 			float UT = standardTime - UTCoffset;	// universal time
 
@@ -583,6 +732,10 @@ namespace BIO
 			//format B G R A all 8 bits;
 			unsigned char * rtn = new unsigned char[moonImageData.width * moonImageData.height * 4];
 
+			memcpy(rtn, moonImageData.pixel_data, moonImageData.width * moonImageData.height * 4);
+
+			/*
+			//convert from RGBA format to BGRA format
 			for (unsigned int y = 0; y < moonImageData.height; y++)
 			{
 				for (unsigned int x = 0; x < moonImageData.width; x++)
@@ -595,6 +748,7 @@ namespace BIO
 					rtn[index + 3] = moonImageData.pixel_data[index + 3];
 				}
 			}
+			//*/
 
 			return rtn;
 		}
@@ -634,7 +788,7 @@ namespace BIO
 			unsigned char * rtn = new unsigned char[w * h * 4];
 
 			//t = clock();
-			for (int i = 0; i < w * h * 4; i = i + 4)
+			for (unsigned int i = 0; i < w * h * 4; i = i + 4)
 			{
 				//RGBA
 				rtn[i] = image[i + 2];
@@ -722,260 +876,7 @@ namespace BIO
 		///////////////////////////////////////////////////////////////////////
 		///////////////////////////////////////////////////////////////////////
 
-		//inline SkyPosition __CalculateMoonPosition_INTERNAL(float d, float UT, float latitude, float longitude, float * v_out)
-		inline int __CalculateMoonPosition_INTERNAL(float d, float * RA_out, float * DEC_out)
-		{
-			//Method from http://www.stjarnhimlen.se/comp/ppcomp.html
-			// by: Paul Schlyter, Stockholm, Sweden
-
-			//int monthint = Date::MonthToInt(month);
-			//float UT = standardTime - UTCoffset;	// universal time
-			//
-			//float d = (float)(367 * (int)year - (7 * ((int)year + ((monthint + 9) / 12))) / 4 + (275 * monthint) / 9 + (int)day - 730530);
-			//d = d + (UT / 24.0f);
-
-			//Calculate the Moon Position ----------------------------------------------
-			float N = MATH::RevolutionReductionDegrees(125.1228f - 0.0529538083f  * d);//in degrees (Long asc.node)
-			float i = 5.1454f;//In degrees (Inclination)
-			float w = MATH::RevolutionReductionDegrees(318.0634f + 0.1643573223f  * d);//in degrees (Arg.of perigee)
-			float a = 60.2666f;//                                (Mean distance)
-			float e = 0.054900f;//                               (Eccentricity)
-			float M = MATH::RevolutionReductionDegrees(115.3654f + 13.0649929509f * d);//in degrees (Mean anomaly)
-
-			//BIO_LOG_CRITICAL(std::endl <<
-			//	"N: " << N << std::endl <<
-			//	"i: " << i << std::endl <<
-			//	"w: " << w << std::endl <<
-			//	"a: " << a << std::endl <<
-			//	"e: " << e << std::endl <<
-			//	"M: " << M << std::endl
-			//	);
-
-			float E = M + (180 / MATH::PIf) * e * sin(M * MATH::DegreesToRadiansf) * (1 + e * cos(M * MATH::DegreesToRadiansf));//in degrees
-			//BIO_LOG_CRITICAL("E0: " << E);
-
-			float x = a * (cos(E * MATH::DegreesToRadiansf) - e);
-			float y = a * sqrt(1 - e*e) * sin(E * MATH::DegreesToRadiansf);
-			//BIO_LOG_CRITICAL("x: " << x << " y: " << y);
-
-			float r = sqrt(x*x + y*y);// = 60.67134 Earth radii
-			//--------------------------------------------------------------------------------
-			//--------------------------------------------------------------------------------
-			//--------------------------------------------------------------------------------
-			//
-			//				Need V for moon phase
-			//
-			//--------------------------------------------------------------------------------
-			//--------------------------------------------------------------------------------
-			//--------------------------------------------------------------------------------
-			float v = MATH::RevolutionReductionDegrees(atan2(y, x) * MATH::RadiansToDegreesf);// in degrees = 259.8605_deg
-			//BIO_LOG_CRITICAL("r: " << r << " v: " << v);
-
-			float xeclip = r * (cos(N* MATH::DegreesToRadiansf) * cos((v + w)* MATH::DegreesToRadiansf) - sin(N* MATH::DegreesToRadiansf) * sin((v + w)* MATH::DegreesToRadiansf) * cos(i* MATH::DegreesToRadiansf));
-			float yeclip = r * (sin(N* MATH::DegreesToRadiansf) * cos((v + w) * MATH::DegreesToRadiansf) + cos(N* MATH::DegreesToRadiansf) * sin((v + w)* MATH::DegreesToRadiansf) * cos(i* MATH::DegreesToRadiansf));
-			float zeclip = r * sin((v + w)* MATH::DegreesToRadiansf) * sin(i* MATH::DegreesToRadiansf);
-			//BIO_LOG_CRITICAL("xeclip: " << xeclip << " yeclip: " << yeclip << " zeclip: " << zeclip);
-
-			//geocentric longetude and latitude
-			float lonecl = atan2(yeclip, xeclip) * MATH::RadiansToDegreesf;//in degrees
-			float latecl = atan2(zeclip, sqrt(xeclip*xeclip + yeclip*yeclip))* MATH::RadiansToDegreesf;//in degrees
-			//BIO_LOG_CRITICAL("lonecl: " << lonecl << " latecl: " << latecl);
-
-			float xh = r * cos(lonecl * MATH::DegreesToRadiansf) * cos(latecl * MATH::DegreesToRadiansf);
-			float yh = r * sin(lonecl * MATH::DegreesToRadiansf) * cos(latecl * MATH::DegreesToRadiansf);
-			float zh = r * sin(latecl * MATH::DegreesToRadiansf);
-
-			float ecl = 23.4393f - 3.563E-7f * d; //in degrees
-
-			float xequat = xh;
-			float yequat = yh * cos(ecl * MATH::DegreesToRadiansf) - zh * sin(ecl * MATH::DegreesToRadiansf);
-			float zequat = yh * sin(ecl * MATH::DegreesToRadiansf) + zh * cos(ecl * MATH::DegreesToRadiansf);
-
-			float RA = MATH::RevolutionReductionDegrees(atan2(yequat, xequat) * MATH::RadiansToDegreesf); //in degrees
-			float Dec = atan2(zequat, sqrt(xequat*xequat + yequat*yequat)) * MATH::RadiansToDegreesf; //in degrees
-
-			(*RA_out) = RA;
-			(*DEC_out) = Dec;
-
-			return 0;
-			/*
-			//BIO_LOG_CRITICAL("RA: " << RA << " Dec: " << Dec);
-
-			float ws = MATH::RevolutionReductionDegrees(282.9404f + 4.70935E-5f   * d); //in degrees (longitude of perihelion)
-			float Ms = MATH::RevolutionReductionDegrees(356.0470f + 0.9856002585f * d);//in degrees (mean anomaly)
-
-			float L = MATH::RevolutionReductionDegrees(ws + Ms);//mean longitude in degrees
-			//BIO_LOG_CRITICAL("L: " << L);
-
-			float GMST0 = (L / 15.0f) + 12.0f;//in hours
-			//BIO_LOG_CRITICAL("GMST0: " << GMST0);
-			//float GMST = GMST0 + UT;//in hours
-
-			//BIO_LOG_CRITICAL("GMST0: " << GMST0);
-
-			float SIDTIME = GMST0 + UT + (longitude * MATH::RadiansToDegreesf) / 15.0f;
-			//BIO_LOG_CRITICAL("SIDTIME: " << SIDTIME);
-
-			float HA = MATH::RevolutionReductionDegrees((SIDTIME * 15.0f) - RA);//in degrees
-			//BIO_LOG_CRITICAL("HA: " << HA);
-
-			x = cos(HA * MATH::DegreesToRadiansf) * cos(Dec * MATH::DegreesToRadiansf);
-			y = sin(HA * MATH::DegreesToRadiansf) * cos(Dec * MATH::DegreesToRadiansf);
-			float z = sin(Dec * MATH::DegreesToRadiansf);
-
-			float xhor = x * sin(latitude) - z * cos(latitude);
-			float yhor = y;
-			float zhor = x * cos(latitude) + z * sin(latitude);
-
-			float azimuth = atan2(yhor, xhor) + MATH::PIf;
-			float altitude = asin(zhor);
-			//--------------------------------------------------------------------------
-
-			(*v_out) = v;
-
-			return SkyPosition(azimuth, MATH::PId2f - altitude);
-			*/
-		}
-
-		//inline SkyPosition __CalculateSunPosition_INTERNAL(float d, float UT, float latitude, float longitude, float * sunLong_out)
-		inline int __CalculateSunPosition_INTERNAL(float d, float * RA_out, float * DEC_out)
-		{
-			
-			//Method from http://www.stjarnhimlen.se/comp/ppcomp.html
-			// by: Paul Schlyter, Stockholm, Sweden
-			//int monthint = Date::MonthToInt(month);
-			//float UT = standardTime - UTCoffset;	// universal time
-			//
-			//float d = (float)(367 * (int)year - (7 * ((int)year + ((monthint + 9) / 12))) / 4 + (275 * monthint) / 9 + (int)day - 730530);
-			//d = d + (UT / 24.0f);
-
-			float w = MATH::RevolutionReductionDegrees(282.9404f + 4.70935E-5f   * d); //in degrees (longitude of perihelion)
-			float a = 1.000000f;//mean distance in a.u.
-			float e = 0.016709f - 1.151E-9f * d; //(eccentricity)
-			float M = MATH::RevolutionReductionDegrees(356.0470f + 0.9856002585f * d);//in degrees (mean anomaly)
-
-			float oblecl = MATH::RevolutionReductionDegrees(23.4393f - 3.563E-7f * d);//in degrees
-			float L = MATH::RevolutionReductionDegrees(w + M);//mean longitude in degrees
-
-			float E = M + (180 / MATH::PIf) * e * sin(M * MATH::DegreesToRadiansf) * (1 + e * cos(M*MATH::DegreesToRadiansf));//in degrees
-			E = MATH::RevolutionReductionDegrees(E);
-			//BIO_LOG_CRITICAL("E: " << E);
-
-			float x = cos(E * MATH::DegreesToRadiansf) - e;
-			float y = sin(E * MATH::DegreesToRadiansf) * sqrt(1 - e*e);
-
-			//BIO_LOG_CRITICAL("x: " << x << " y: " << y);
-
-			float r = sqrt(x*x + y*y);
-			float v = atan2(y, x) * MATH::RadiansToDegreesf;//in degrees
-
-			//BIO_LOG_CRITICAL("r: " << r << " v: " << v);
-
-			//--------------------------------------------------------------------------------
-			//--------------------------------------------------------------------------------
-			//--------------------------------------------------------------------------------
-			//
-			//				Need lon for moon phase
-			//
-			//--------------------------------------------------------------------------------
-			//--------------------------------------------------------------------------------
-			//--------------------------------------------------------------------------------
-			float lon = MATH::RevolutionReductionDegrees(v + w);//longitude of sun in degrees
-
-			//BIO_LOG_CRITICAL("long: " << lon);
-
-			x = r * cos(lon * MATH::DegreesToRadiansf);//geocentric longitude
-			y = r * sin(lon * MATH::DegreesToRadiansf);//geocentric latitude
-			float z = 0.0;//sun is always zero
-
-			//BIO_LOG_CRITICAL("x: " << x << " y: " << y << " z: " << z);
-
-			float xequat = x;
-			float yequat = y * cos(23.4406f * MATH::DegreesToRadiansf) - z * sin(23.4406f * MATH::DegreesToRadiansf);
-			float zequat = y * sin(23.4406f * MATH::DegreesToRadiansf) + z * cos(23.4406f * MATH::DegreesToRadiansf);
-
-			//BIO_LOG_CRITICAL("xequat: " << xequat << " yequat: " << yequat << " zequat: " << zequat);
-
-			float RA = atan2(yequat, xequat) * MATH::RadiansToDegreesf; //In Degrees 
-			float Dec = atan2(zequat, sqrt(xequat*xequat + yequat*yequat)) * MATH::RadiansToDegreesf;//in Degrees
-
-			(*RA_out) = RA;
-			(*DEC_out) = Dec;
-
-			return 0;
-			/*
-			//BIO_LOG_CRITICAL("RA: " << RA << " Dec: " << Dec);
-
-			float GMST0 = (L / 15.0f) + 12.0f;//in hours
-			//float GMST = GMST0 + UT;//in hours
-
-			//BIO_LOG_CRITICAL("GMST0: " << GMST0);
-
-			float SIDTIME = GMST0 + UT + (longitude * MATH::RadiansToDegreesf) / 15.0f;
-
-			//BIO_LOG_CRITICAL("SidTime: " << SIDTIME);
-
-			float HA = (SIDTIME * 15.0f) - RA;//ha is in degrees
-
-			//BIO_LOG_CRITICAL("HA: " << HA);
-
-			x = cos(HA * MATH::DegreesToRadiansf) * cos(Dec * MATH::DegreesToRadiansf);
-			y = sin(HA * MATH::DegreesToRadiansf) * cos(Dec * MATH::DegreesToRadiansf);
-			z = sin(Dec * MATH::DegreesToRadiansf);
-
-			//BIO_LOG_CRITICAL("x: " << x << " y: " << y << " z: " << z);
-
-			float xhor = x * sin(latitude) - z * cos(latitude);
-			float yhor = y;
-			float zhor = x * cos(latitude) + z * sin(latitude);
-
-			//BIO_LOG_CRITICAL("xhor: " << xhor << " yhor: " << yhor << " zhor: " << zhor);
-
-			float azimuth = atan2(yhor, xhor) + MATH::PIf;
-			float altitude = asin(zhor);//atan2(zhor, sqrt(xhor*xhor + yhor*yhor));
-
-			//BIO_LOG_CRITICAL("azimuth: " << azimuth* MATH::BIO_180_PIf << " altitude: " << altitude* MATH::BIO_180_PIf);
-
-			(*sunLong_out) = lon;
-			
-			return SkyPosition(azimuth, MATH::PId2f - altitude);
-			*/
-		}
-
-		inline SkyPosition Converts(float RA, float Dec, float d, float UT, float latitude, float longitude)
-		{
-			float ws = (282.9404f + 4.70935E-5f   * d); //in degrees (longitude of perihelion)
-			float Ms = (356.0470f + 0.9856002585f * d);//in degrees (mean anomaly)
-
-			float L = MATH::RevolutionReductionDegrees(ws + Ms);//mean longitude in degrees
-			//BIO_LOG_CRITICAL("L: " << L);
-
-			float GMST0 = (L / 15.0f) + 12.0f;//in hours
-			//BIO_LOG_CRITICAL("GMST0: " << GMST0);
-			//float GMST = GMST0 + UT;//in hours
-
-			//BIO_LOG_CRITICAL("GMST0: " << GMST0);
-
-			float SIDTIME = GMST0 + UT + (longitude * MATH::RadiansToDegreesf) / 15.0f;
-			//BIO_LOG_CRITICAL("SIDTIME: " << SIDTIME);
-
-			float HA = MATH::RevolutionReductionDegrees((SIDTIME * 15.0f) - RA);//in degrees
-			//BIO_LOG_CRITICAL("HA: " << HA);
-
-			float x = cos(HA * MATH::DegreesToRadiansf) * cos(Dec * MATH::DegreesToRadiansf);
-			float y = sin(HA * MATH::DegreesToRadiansf) * cos(Dec * MATH::DegreesToRadiansf);
-			float z = sin(Dec * MATH::DegreesToRadiansf);
-
-			float xhor = x * sin(latitude) - z * cos(latitude);
-			float yhor = y;
-			float zhor = x * cos(latitude) + z * sin(latitude);
-
-			float azimuth = atan2(yhor, xhor) + MATH::PIf;
-			float altitude = asin(zhor);
-			//--------------------------------------------------------------------------
-
-			return SkyPosition(azimuth, MATH::PId2f - altitude);
-		}
+		
 
 		//^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 		//			End private functions
@@ -985,6 +886,25 @@ namespace BIO
 		bool LibraryTests(XNELO::TESTING::Test * test)
 		{
 			test->SetName("BIOSky Functions Test");
+
+			//test DaysSince Jan 2000
+			test->UnitTest(DaysSinceJan02000(JANUARY, 0, 2000) == 0, "Days Since Dec 31, 1999[1]");
+			test->UnitTest(DaysSinceJan02000(DECEMBER, 31, 1999) == 0, "Days Since Dec 31, 1999[2]");
+			test->UnitTest(DaysSinceJan02000(JANUARY, 1, 2000) == 1, "Days Since Dec 31, 1999[3]");
+			test->UnitTest(DaysSinceJan02000(DECEMBER, 31, 2000) == 366, "Days Since Dec 31, 1999[4]");
+			test->UnitTest(DaysSinceJan02000(DECEMBER, 31, 2001) == 366+365, "Days Since Dec 31, 1999[4]");
+			test->UnitTest(DaysSinceJan02000(JANUARY, 31, 2002) == 366 + 365 + 31, "Days Since Dec 31, 1999[4]");
+
+			test->UnitTest(CalculateJulianDay(JANUARY, 1, 2000) == 2451544.5f, "Julian Day[1]");
+			test->UnitTest(CalculateJulianDay(JANUARY, 1, 1999) == 2451179.5f, "Julian Day[2]");
+			test->UnitTest(CalculateJulianDay(JUNE, 19, 1987) == 2446965.5f, "Julian Day[3]");
+			test->UnitTest(CalculateJulianDay(JANUARY, 27, 1988) == 2447187.5f, "Julian Day[4]");
+			test->UnitTest(CalculateJulianDay(JANUARY, 1, 1900) == 2415020.5f, "Julian Day[5]");
+			test->UnitTest(CalculateJulianDay(JANUARY, 1, 1600) == 2305447.5f, "Julian Day[6]");
+			test->UnitTest(CalculateJulianDay(DECEMBER, 31, -123) == 1676496.5f, "Julian Day[7]");
+			test->UnitTest(CalculateJulianDay(JANUARY, 1, -122) == 1676497.5f, "Julian Day[8]");
+			test->UnitTest(CalculateJulianDay(JANUARY, 2, -4712) == 0.5f, "Julian Day[9]");
+			//std::cout << "Julian Date: " << CalculateJulianDay(APRIL, 10, 837) << std::endl;
 
 			SkyPosition pos;
 
@@ -1086,7 +1006,7 @@ namespace BIO
 			test->UnitTest(pos.Azimuth, 5.90341f, positionTolerance, "Azimuth 2300");
 			test->UnitTest(pos.Zenith, 1.97533f, positionTolerance, "Zenith 2300");
 
-			pos = CalculateMoonPosition(17.0f, -4, MARCH, 14, 2015, -10.141931686131018 * MATH::DegreesToRadiansf, -61.875 * MATH::DegreesToRadiansf);
+			pos = CalculateMoonPosition(17.0f, -4, MARCH, 14, 2015, -10.141931686131018f * MATH::DegreesToRadiansf, -61.875f * MATH::DegreesToRadiansf);
 			test->UnitTest(pos.Azimuth, 4.03603f, positionTolerance, "Moon Azimuth[A]");
 			test->UnitTest(pos.Zenith, 2.36212f, positionTolerance, "Moon Zenith [A]");
 
@@ -1144,11 +1064,11 @@ namespace BIO
 			zenith = CalculateCelestialNorthPoleZenith(-21.06f * MATH::DegreesToRadiansf);
 			test->UnitTest(zenith, 1.938362667f, rotationTolerance, "StarZenith [1]");
 
-			SkyPosition sun = CalculateSunPosition(6.6, -6, MARCH, 13, 2015, 41 * MATH::DegreesToRadiansf, -112 * MATH::DegreesToRadiansf);
-			SkyPosition moon = CalculateMoonPosition(6.6, -6, MARCH, 13, 2015, 41 * MATH::DegreesToRadiansf, -112 * MATH::DegreesToRadiansf);
+			SkyPosition sun = CalculateSunPosition(6.6f, -6, MARCH, 13, 2015, 41 * MATH::DegreesToRadiansf, -112 * MATH::DegreesToRadiansf);
+			SkyPosition moon = CalculateMoonPosition(6.6f, -6, MARCH, 13, 2015, 41 * MATH::DegreesToRadiansf, -112 * MATH::DegreesToRadiansf);
 			SkyData tmp;
 			
-			tmp = CalculateSkyData(6.6, -6, MARCH, 13, 2015, 41 * MATH::DegreesToRadiansf, -112 * MATH::DegreesToRadiansf);
+			tmp = CalculateSkyData(6.6f, -6, MARCH, 13, 2015, 41 * MATH::DegreesToRadiansf, -112 * MATH::DegreesToRadiansf);
 
 			test->UnitTest(tmp.moonPos.Azimuth, moon.Azimuth, positionTolerance, "SkyData[1a]");
 			test->UnitTest(tmp.moonPos.Zenith, moon.Zenith, positionTolerance, "SkyData[1b]");
@@ -1157,21 +1077,72 @@ namespace BIO
 
 			float phaseTolerance = 0.01f;
 
-			test->UnitTest(tmp.phase, 273.13281f, phaseTolerance, "SkyData[3]");
+			test->UnitTest(tmp.phase, 267.164f, phaseTolerance, "SkyData[3]");
 
 			test->UnitTest(tmp.starRotation, 5.829399701f, rotationTolerance, "SkyData[4]");
 
-			std::cout << "Phase: " << tmp.phase << std::endl;
+			//std::cout << "Phase: " << tmp.phase << std::endl;
 
 			test->UnitTest(tmp.sunPos.Azimuth, sun.Azimuth, positionTolerance, "SkyData[5a]");
 			test->UnitTest(tmp.sunPos.Zenith, sun.Zenith, positionTolerance, "SkyData[5b]");
 
+			float moonPhaseTolerance = 2.0f;
+
+			tmp = CalculateSkyData(13.5f, -7.0f, JANUARY, 2, 2003, 41 * MATH::DegreesToRadiansf, -112 * MATH::DegreesToRadiansf);
+			
+			//test->UnitTest(tmp.phase, 0, moonPhaseTolerance, "New Moon Correct");
+			test->UnitTest(
+				((std::abs(tmp.phase - 0.0f) <= moonPhaseTolerance) ||
+				(std::abs(tmp.phase - 360.0f) <= moonPhaseTolerance)),
+				"New Moon Correct [1]");
+			//std::cout << "New Moon Phase: " << tmp.phase << std::endl;
+
+			tmp = CalculateSkyData(22.516666f, -6.0f, JULY, 24, 2006, 41 * MATH::DegreesToRadiansf, -112 * MATH::DegreesToRadiansf);
+
+			test->UnitTest(
+				((std::abs(tmp.phase - 0.0f) <= moonPhaseTolerance) ||
+				(std::abs(tmp.phase - 360.0f) <= moonPhaseTolerance)),
+				"New Moon Correct [2]");
+			//std::cout << "New Moon Phase: " << tmp.phase << std::endl;
+
+			tmp = CalculateSkyData(16.783f, -7.0f, FEBRUARY, 18, 2015, 41 * MATH::DegreesToRadiansf, -112 * MATH::DegreesToRadiansf);
+
+			test->UnitTest(
+				((std::abs(tmp.phase - 0.0f) <= moonPhaseTolerance) ||
+				(std::abs(tmp.phase - 360.0f) <= moonPhaseTolerance)),
+				"New Moon Correct [3]");
+			//std::cout << "New Moon Phase: " << tmp.phase << std::endl;
+
+			tmp = CalculateSkyData(4.66666f, -6.0f, SEPTEMBER, 26, 1992, 41 * MATH::DegreesToRadiansf, -112 * MATH::DegreesToRadiansf);
+
+			test->UnitTest(
+				((std::abs(tmp.phase - 0.0f) <= moonPhaseTolerance) ||
+				(std::abs(tmp.phase - 360.0f) <= moonPhaseTolerance)),
+				"New Moon Correct [4]");
+			//std::cout << "New Moon Phase: " << tmp.phase << std::endl;
+			
 			//for (int i = 0; i < 28; i++)
 			//{
 			//	tmp = CalculateSkyData(1.00f, -7.0f, MARCH, i, 2015, 41 * MATH::DegreesToRadiansf, -112 * MATH::DegreesToRadiansf);
 			//
 			//	std::cout << "DAY: " << i << "000 PhaseAngle: " << tmp.phase << std::endl;
 			//}
+
+			/*
+			//timing for memcpy of the moonImageData
+			unsigned char * rtn = new unsigned char[moonImageData.width * moonImageData.height * 4];
+			int repititions = 100000000;
+			clock_t t = clock();
+			for (int i = 0; i < repititions; i++)
+				memcpy(rtn, moonImageData.pixel_data, moonImageData.width * moonImageData.height * 4);
+			t = clock() - t;
+
+			std::cout << "Clicks: " << t << " Seconds: " << ((float)t) / CLOCKS_PER_SEC << " s" << std::endl;
+			std::cout << "Clicks per memcpy: " << ((float)t) / repititions << " Seconds: " << ((((float)t) / repititions) / CLOCKS_PER_SEC) << std::endl;
+			std::cout << "This means you can call memcpy on the moon image " << (1.0 / 60.0 / ((((double)t) / repititions) / CLOCKS_PER_SEC)) << " times per frame (at 60fps).\n";
+
+			delete[] rtn;
+			*/
 
 			return test->GetSuccess();
 		}

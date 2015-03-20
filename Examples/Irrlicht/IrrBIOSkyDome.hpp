@@ -190,6 +190,8 @@ public:
 
 	virtual irr::video::SMaterial& IrrBIOSkyDome::getMaterial(irr::u32 i);
 
+	virtual unsigned char * GetMoonTexturePixels();
+
 	/**
 	* Return a class that inherits from IDomeVertecies. This class
 	* should contain, or at least be able to access, the vertex data
@@ -220,6 +222,8 @@ public:
 	* and will call UnlockGeometry when it is done.
 	*/
 	virtual void LockGeometry();
+
+	virtual void LockMoonTexture();
 
 	/**
 	* Set Position of the moon.
@@ -273,6 +277,8 @@ public:
 	* and will call UnlockGeometry when it is done.
 	*/
 	virtual void UnlockGeometry();
+
+	virtual void UnlockMoonTexture();
 };
 
 #endif //___BIOSKY_IRRBIOSKYDOME_HPP__2015___

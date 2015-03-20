@@ -59,6 +59,35 @@ namespace BIO
 		BIOSKY_API float CalculateCelestialNorthPoleZenith(float latitude);
 
 		/**
+		* Calculate the Julian Date.
+		*
+		* @param month The Month of the year.
+		*
+		* @param day The day of the month.
+		*
+		* @param year The year.
+		*/
+		BIOSKY_API float CalculateJulianDay(DATE_MONTH month, unsigned int day, int year);
+
+		/**
+		* Calculate the Phase of the moon;
+		*
+		* @param standardTime The time in 24 hr decimal format. For Example
+		*			1:15 PM == 13.25.
+		*
+		* @param UTCoffset The number of hours offset from UTC-0 time.
+		*
+		* @param month The month of the year.
+		*
+		* @param day The day of the month.
+		*
+		* @param year The year.
+		*
+		* @return Returns a float with the moon phase between [0,360]
+		*/
+		BIOSKY_API float CalculateMoonPhase(float standardTime, float UTCoffset, DATE_MONTH month, unsigned int day, unsigned int year);
+
+		/**
 		* Calculate Moon Position
 		*
 		* @param standardTime The time in 24 hr decimal format. For Example
@@ -274,6 +303,28 @@ inline float BIO::SKY::CalculateCelestialNorthPoleZenith(float latitude)
 
 	//return SkyPosition(MATH::PIf, MATH::PId2f - latitude);//azimuth, MATH::PId2f - altitude);
 	return MATH::PId2f - latitude;
+}
+
+inline float BIO::SKY::CalculateJulianDay(DATE_MONTH month, unsigned int day, int year)
+{
+	int monthInt = Date::MonthToInt(month);
+
+	if (monthInt <= 2)
+	{
+		year -= 1;
+		monthInt += 12;
+	}
+
+	int A = 0;
+	int B = 0;
+
+	if (year > 1582)
+	{
+		A = (int)(year / 100);
+		B = 2 - A + (int)(A / 4);
+	}
+
+	return (int)(365.25*(year + 4716)) + (int)(30.6001 * (monthInt + 1)) + day + B - 1524.5f;
 }
 
 inline int BIO::SKY::DaysSinceJan02000(DATE_MONTH month, unsigned int day, unsigned int year)

@@ -218,14 +218,30 @@ namespace BIO
 			*
 			* @return Returns the error code.
 			*/
-			BIOSKY_API ErrorType GetErrorCode();
+			BIOSKY_API virtual ErrorType GetErrorCode();
+
+			/**
+			* Set the phase of the moon and simultaneously update the moon
+			* texture.
+			*
+			* @param phase The phase of the moon. This value must be within the
+			*			range of [0,360] inclusive. 0 and 360 corrosponds to
+			*			the new moon, 45 to Waxing cresent, 90 first quarter,
+			*			..., 180 to full moon, 135 to waning gibbous, ect.
+			*
+			* @note See https://www.youtube.com/watch?v=XX4mRAfTkTE for
+			*		detailed explination. See
+			*		http://xnelo.com/images/LunarPhase.png for an image
+			*		explaining the phase angle.
+			*/
+			BIOSKY_API virtual void SetMoonPhase(float phase);
 
 			/**
 			* Set the position in the sky of the moon.
 			*
 			* @param pos A struct containing the position of the moon.
 			*/
-			BIOSKY_API void SetMoonPosition(SkyPosition pos);
+			BIOSKY_API virtual void SetMoonPosition(SkyPosition pos);
 
 			/**
 			* Set the position in the sky of the moon.
@@ -234,7 +250,7 @@ namespace BIO
 			*
 			* @param lunarZenith The angle from the zenith position.
 			*/
-			BIOSKY_API void SetMoonPosition(float lunarAzimuth, float lunarZenith);
+			BIOSKY_API virtual void SetMoonPosition(float lunarAzimuth, float lunarZenith);
 
 			/**
 			* Set the position of the Stars.
@@ -245,14 +261,14 @@ namespace BIO
 			*			is (PI/2) - latitude Radians (90 - latitude Degrees).
 			*			This function takes the zenith in Radians.
 			*/
-			BIOSKY_API void SetStarPosition(float zenith, float rotation);
+			BIOSKY_API virtual void SetStarPosition(float zenith, float rotation);
 
 			/**
 			* Set the position in the sky of the sun.
 			*
 			* @param pos A struct containing the position of the sun.
 			*/
-			BIOSKY_API void SetSunPosition(SkyPosition pos);
+			BIOSKY_API virtual void SetSunPosition(SkyPosition pos);
 
 			/**
 			* Set the position in the sky of the sun.
@@ -261,7 +277,7 @@ namespace BIO
 			*
 			* @param SolarZenith The angle from the zenith position.
 			*/
-			BIOSKY_API void SetSunPosition(float SolarAzimuth, float SolarZenith);
+			BIOSKY_API virtual void SetSunPosition(float SolarAzimuth, float SolarZenith);
 
 			/**
 			* Update the sky simulation according to the currently stored time
@@ -331,7 +347,7 @@ namespace BIO
 			*		the updating of the sky is automatically taken care of in
 			*		when either of the IBIOSky::Update functions are called.
 			*/
-			BIOSKY_API void UpdateSkyColor();
+			BIOSKY_API virtual void UpdateSkyColor();
 
 			/**
 			* Update the SunPosition with the current parameters.

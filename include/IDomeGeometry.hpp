@@ -65,6 +65,10 @@ namespace BIO
 			*/
 			virtual IDomeVertecies * GetVertecies() = 0;
 
+			/**
+			*
+			*/
+			virtual unsigned char * GetMoonTexturePixels() = 0;
 
 			/**
 			* This function is the request for the BIOSky to take control of 
@@ -80,6 +84,11 @@ namespace BIO
 			* and will call UnlockGeometry when it is done.
 			*/
 			virtual void LockGeometry() = 0;
+
+			/**
+			*
+			*/
+			virtual void LockMoonTexture() = 0;
 
 			/**
 			* Set Position of the moon.
@@ -139,6 +148,11 @@ namespace BIO
 			* and will call UnlockGeometry when it is done.
 			*/
 			virtual void UnlockGeometry() = 0;
+
+			/**
+			*
+			*/
+			virtual void UnlockMoonTexture() = 0;
 		};
 	}//end namespace SKY
 }//end namespace BIO

@@ -302,6 +302,11 @@ irr::video::SMaterial& IrrBIOSkyDome::getMaterial(irr::u32 i)
 	return _material;
 }
 
+unsigned char * IrrBIOSkyDome::GetMoonTexturePixels()
+{
+	return (unsigned char *)_moonTexture->lock();
+}
+
 BIO::SKY::IDomeVertecies * IrrBIOSkyDome::GetVertecies()
 {
 	//this is allocated on the heap. It will then be
@@ -316,6 +321,11 @@ BIO::SKY::IDomeVertecies * IrrBIOSkyDome::GetVertecies()
 void IrrBIOSkyDome::LockGeometry()
 {
 	//In this implementation we do not need to do anything.
+}
+
+void IrrBIOSkyDome::LockMoonTexture()
+{
+	//In this implementation we do not need to do anything
 }
 
 void IrrBIOSkyDome::SetMoonPosition(float unitX, float unitY, float unitZ)
@@ -356,6 +366,11 @@ void IrrBIOSkyDome::UnlockGeometry()
 		delete _vertData;
 		_vertData = NULL;
 	}
+}
+
+void IrrBIOSkyDome::UnlockMoonTexture()
+{
+	_moonTexture->unlock();
 }
 
 

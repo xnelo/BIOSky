@@ -57,6 +57,22 @@ namespace BIO
 			virtual ErrorType GetErrorCode() = 0;
 
 			/**
+			* Set the phase of the moon and simultaneously update the moon 
+			* texture.
+			*
+			* @param phase The phase of the moon. This value must be within the
+			*			range of [0,360] inclusive. 0 and 360 corrosponds to 
+			*			the new moon, 45 to Waxing cresent, 90 first quarter, 
+			*			..., 180 to full moon, 135 to waning gibbous, ect.
+			*
+			* @note See https://www.youtube.com/watch?v=XX4mRAfTkTE for 
+			*		detailed explination. See 
+			*		http://xnelo.com/images/LunarPhase.png for an image 
+			*		explaining the phase angle.
+			*/
+			virtual void SetMoonPhase(float phase) = 0;
+
+			/**
 			* Set the position in the sky of the moon.
 			*
 			* @param pos A struct containing the position of the moon.

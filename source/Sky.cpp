@@ -36,6 +36,10 @@
 #include "Sky.hpp"
 #include "IDomeVertecies.hpp"
 
+#include "../source/MoonTexture.c"
+
+#include <iostream>
+
 namespace BIO
 {
 	namespace SKY
@@ -49,6 +53,144 @@ namespace BIO
 		Sky::~Sky()
 		{
 			_skydome = NULL;
+		}
+
+		void Sky::SetMoonPhase(float phase)
+		{
+			//reduce phase to [0,360]
+			phase = MATH::RevolutionReductionDegrees(phase);
+
+			int quarter = 0; //0=first 1=second 2=third 3=fourth
+
+			//calculate centerX
+			int centerX = (int)(((float)moonImageData.width) * 0.5f);
+			int centerY = (int)(((float)moonImageData.height) * 0.5f);
+
+			//calculate height of Ellipse
+			int height = (int)(((float)moonImageData.height - 1) / 2.0f);
+
+			//calculate width of Ellipse
+			int width;
+
+			if (phase > 180)
+			{
+				phase -= 180;
+				quarter += 2;
+			}
+
+			if (phase > 90)
+			{
+				phase -= 90;
+				quarter += 1;
+				width = (int)(centerX - ((float)(centerX - 1) * (1 - (phase / 90.0f))));
+			}
+			else
+			{
+				width = (int)(centerX - ((float)(centerX - 1) * (phase / 90.0f)));
+			}
+
+			
+
+			//lock image
+			_skydome->LockMoonTexture();
+			//update pixels as needed
+			unsigned char * pixel = _skydome->GetMoonTexturePixels();
+
+			memcpy(pixel, moonImageData.pixel_data, moonImageData.width * moonImageData.height * 4);
+
+			int start = 0;
+			int end = 0;
+			int hh = height * height;
+			int ww = width * width;
+			int hhww = hh * ww;
+			int x0 = width;
+			int dx = 0;
+
+			//horozontal diameter
+			if (quarter == 0)//first Quarter
+			{
+				start = 0;
+				end = centerX + width;
+			}
+			else if (quarter == 1)//second quarter
+			{
+				start = 0;
+				end = centerX - width;
+			}
+			else if (quarter == 2)//third quarter
+			{
+				start = centerX + width;
+				end = moonImageData.width;
+			}
+			else //fourth quarter
+			{
+				start = centerX- width;
+				end = moonImageData.width;
+			}
+
+			for (int x = start; x <= end; x++)
+			{
+				int index = ((centerY * moonImageData.width) + x) * 4;
+				pixel[index + 3] = 0;
+			}
+			//---------------------------------------------------
+
+			static int counter = 0;
+			counter++;
+			if (counter > 10)
+			{
+				std::cout << "MOON Quarter: " << quarter << " width: " << width << std::endl;
+				counter = 0;
+			}
+
+			for (int y = 1; y <= height; y++)
+			{
+				int x1 = x0 - (dx - 1);
+				for (; x1 > 0; x1--)
+				{
+					if (x1*x1*hh + y*y*ww <= hhww)
+						break;
+				}
+				dx = x0 - x1;
+				x0 = x1;
+
+				if (quarter == 0)//first Quarter
+				{
+					start = 0;
+					end = centerX + x0;
+				}
+				else if (quarter == 1)//second quarter
+				{
+					start = 0;
+					end = centerX - x0;
+				}
+				else if (quarter == 2)//third quarter
+				{
+					start = centerX + x0;
+					end = moonImageData.width;
+				}
+				else //fourth quarter
+				{
+					start = centerX - x0;
+					end = moonImageData.width;
+				}
+
+				//for (int x = -x0; x <= x0; x++)
+				//for (int x = 0; x <= (centerX + x0); x++)
+				for (int x = start; x <= end; x++)
+				{
+					//int index = (((centerY + y) * moonImageData.width) + (centerX + x)) * 4;
+					int index = (((centerY + y) * moonImageData.width) + x) * 4;
+					pixel[index + 3] = 0;
+
+					//index = (((centerY - y) * moonImageData.width) + (centerX + x)) * 4;
+					index = (((centerY - y) * moonImageData.width) + x) * 4;
+					pixel[index + 3] = 0;
+				}
+			}
+
+			//unlock image
+			_skydome->UnlockMoonTexture();
 		}
 
 		void Sky::SetMoonPosition(float lunarAzimuth, float lunarZenith)
@@ -82,7 +224,7 @@ namespace BIO
 			_skydome->SetSunPosition(x,y,z);
 		}
 
-		BIOSKY_API void Sky::UpdateSkyColor()
+		void Sky::UpdateSkyColor()
 		{
 			double T = 3.5;
 			PerezYxyCoefficients coeffs = GetPerezCoefficientsForTurbidity(T); //this doesn't need to be called every time this function is called.
