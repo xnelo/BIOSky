@@ -162,6 +162,7 @@ inline void BIO::SKY::SkyCalculated::UpdateAllSkyObjects()
 	SetMoonVisibility(skyInfo.moonVisibility);
 
 	UpdateSkyColor();
+	UpdateSkyLights();
 }
 
 inline void BIO::SKY::SkyCalculated::UpdateMoonPosition()

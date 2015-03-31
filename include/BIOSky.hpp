@@ -53,6 +53,7 @@
 #include "Date.hpp"
 #include "DateTime.hpp"
 #include "GPS.hpp"
+#include "LightData.hpp"
 //Interfaces
 #include "IDomeVertecies.hpp"
 #include "IDomeGeometry.hpp"

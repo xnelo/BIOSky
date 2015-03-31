@@ -50,6 +50,7 @@ namespace BIO
 		const double PIx2 = 3.1415926535897932384626433832795 * 2.0;/**The Constant PI Times 2*/
 		const double DegreesToRadians = PI / 180.0;/**The Constant PI / 180 Degrees*/
 		const double RadiansToDegrees = 180.0 / PI;/**The Constant 180 Degrees / PI*/
+		const double e = 2.718281828459045235360287471352;/**The constant e = 2.718....*/
 
 		//To avoid casting here are the float equivalants.
 		const float PIf = 3.1415926535897932384626433832795f;/**(float)The Constant PI = 3.14159265...*/
@@ -57,6 +58,7 @@ namespace BIO
 		const float PIx2f = 3.1415926535897932384626433832795f * 2.0f;/**(float)The Constant PI Times 2*/
 		const float DegreesToRadiansf = PIf / 180.0f;/**(float)The Constant PI / 180 Degrees*/
 		const float RadiansToDegreesf = 180.0f / PIf;/**(float)The Constant 180 Degrees / PI*/
+		const float e_f = 2.718281828459045235360287471352f;/**The constant e = 2.718....*/
 
 
 		/**

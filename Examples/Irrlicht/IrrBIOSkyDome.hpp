@@ -163,6 +163,8 @@ protected:
 	irr::video::ITexture * _nightTexture;
 	/**The transformation for the stars. This is mostly rotation.*/
 	irr::core::matrix4 _starTransformations;
+	/**The Sky light object.*/
+	irr::scene::ILightSceneNode * _skyLight;
 public: 
 	/**
 	* Constructor
@@ -244,6 +246,11 @@ public:
 	*			radius of the dome.
 	*/
 	virtual void SetMoonPosition(float unitX, float unitY, float unitZ);
+
+	/**
+	* Set the sky light data
+	*/
+	virtual void SetSkyLight(BIO::SKY::LightData & data);
 
 	/**
 	* Set the rotation of the Stars.

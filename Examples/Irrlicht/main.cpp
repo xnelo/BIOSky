@@ -347,6 +347,7 @@ void setStaticSky()
 		sky->SetSunPosition(_staticSunPos.Azimuth, _staticSunPos.Zenith);
 		sky->SetMoonPosition(_staticMoonPos.Azimuth, _staticMoonPos.Zenith);
 		sky->UpdateSkyColor();
+		sky->UpdateSkyLights();
 	}
 }
 
@@ -837,19 +838,6 @@ int Init(irr::IrrlichtDevice * dev, DefaultEventReceiver * eventReciever)
 	irr::scene::IMeshSceneNode * ground = sm->addMeshSceneNode(mesh);
 
 	ground->setMaterialFlag(irr::video::EMF_LIGHTING, true);
-
-	irr::scene::ILightSceneNode * sun = sm->addLightSceneNode();
-
-	irr::video::SLight & l = sun->getLightData();
-	l.Direction = irr::core::vector3df(0, 0, 0);
-	l.Type = irr::video::ELT_DIRECTIONAL;
-	l.AmbientColor = irr::video::SColorf(0.3f, 0.3f, 0.3f, 1.0f);
-	l.SpecularColor = irr::video::SColorf(0.4f, 0.4f, 0.4f, 1);
-	l.DiffuseColor = irr::video::SColorf(1.0f, 1.0f, 1.0f, 1.0f);
-	l.CastShadows = false;
-
-	sun->setPosition(irr::core::vector3df(0, 0, 0));
-	sun->setRotation(irr::core::vector3df(65.0f,129.0f,12.0f));
 
 	//Setup the skydome
 	dome = new IrrBIOSkyDome(sm->getRootSceneNode(), sm, SKYDOME_ID);

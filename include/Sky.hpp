@@ -52,6 +52,19 @@ namespace BIO
 		*/
 		class Sky : public ISky
 		{
+		private:
+			struct RGB
+			{
+				float R;
+				float G;
+				float B;
+			};
+			struct InterpolationData
+			{
+				float angle;
+				RGB light;
+			};
+
 		protected:
 			/**
 			* Pointer to the skydome geometry
@@ -70,6 +83,11 @@ namespace BIO
 			* there was no error. Otherwise there is an error.
 			*/
 			ErrorType _error;
+
+			/**
+			*
+			*/
+			std::vector<InterpolationData> _lightInterpolation;
 
 			/**
 			* A structure to hold the coefficients used in the Perez skymodel
@@ -196,6 +214,17 @@ namespace BIO
 			BIOSKY_API virtual ~Sky();
 
 			/**
+			* Calculate the Color of the skylights. This function depends on
+			* the position of the sun and moon to determin the color of the
+			* lights due to sky phenomena.
+			*
+			* @NOTE This function depends on sun and moon positions.
+			*
+			* @return Returns a
+			*/
+			BIOSKY_API virtual LightData CalculateSkyLights();
+
+			/**
 			* Converts a cartesian coordinate (x,y,z) into a sky coordinate
 			* (azimuth, zenith).
 			*
@@ -260,6 +289,11 @@ namespace BIO
 			*			the moon is completely visible.
 			*/
 			BIOSKY_API virtual void SetMoonVisibility(float visibility);
+
+			/**
+			* Set SkyLight Data.
+			*/
+			BIOSKY_API virtual void SetSkyLights(LightData & lightData);
 
 			/**
 			* Set the position of the Stars.
@@ -327,6 +361,8 @@ namespace BIO
 			*/
 			BIOSKY_API virtual void UpdateMoonPosition() = 0;
 
+			BIOSKY_API virtual void UpdateSkyLights();
+
 			/**
 			* Update the position of the North Star according to the current
 			* latitude of the observer.
@@ -364,6 +400,10 @@ namespace BIO
 			* @note This function should NOT be called every frame.
 			*/
 			BIOSKY_API virtual void UpdateSunPosition() = 0;
+
+#if BIOSKY_TESTING == 1
+			BIOSKY_API static bool Tests(XNELO::TESTING::Test * test);
+#endif
 		};
 	}//end namespace SKY
 }//end namespace BIO
@@ -389,9 +429,25 @@ inline void BIO::SKY::Sky::SetMoonPosition(SkyPosition pos)
 	SetMoonPosition(pos.Azimuth, pos.Zenith);
 }
 
+inline void BIO::SKY::Sky::SetSkyLights(LightData & lightData)
+{
+	_skydome->SetSkyLight(lightData);
+}
+
+inline void BIO::SKY::Sky::SetStarPosition(float zenith, float rotation)
+{
+	_skydome->SetStarRotation(zenith, rotation, 0);
+}
+
 inline void BIO::SKY::Sky::SetSunPosition(SkyPosition pos)
 {
 	SetSunPosition(pos.Azimuth, pos.Zenith);
+}
+
+inline void BIO::SKY::Sky::UpdateSkyLights()
+{
+	LightData data = CalculateSkyLights();
+	SetSkyLights(data);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -51,6 +51,7 @@
 //Included all non-included headers for testing.
 #include "DateTime.hpp"
 #include "GPS.hpp"
+#include "Sky.hpp"
 #endif
 
 namespace BIO
@@ -220,6 +221,32 @@ namespace BIO
 
 			return rtn;
 		}
+
+		/*
+		//not sure if I need this
+		float CalculateSolarIlluminance(unsigned int DayofYear, float sunZenith)
+		{
+			sunZenith = MATH::PId2f - sunZenith;
+
+			const int SolarIlluminanceConstant = 128000;
+
+			//Extraterrestrial Solar Illuminance
+			float ExtSolarIlluminance = SolarIlluminanceConstant * (1.0f + 0.033412f * cos(MATH::PIx2*(((float)(DayofYear - 3) / 365.0f))));
+
+			std::cout << "EXT: " << ExtSolarIlluminance << std::endl;
+
+			//Atmospheric Extinction
+			float C = 0.168333f;
+
+			//optical airmass
+			float M = (1.0f / std::pow(std::cos(sunZenith) + 0.15f * (93.885f - (sunZenith * MATH::RadiansToDegreesf)), -1.253f));
+
+			//Direct Normal Solar Illuminance.
+			float DNSolarIlluminance = ExtSolarIlluminance * std::pow(MATH::e_f, -C * M);
+
+			return DNSolarIlluminance;
+		}
+		//*/
 
 		SkyPosition CalculateSunPosition(float standardTime, float UTCoffset, DATE_MONTH month, unsigned int day, unsigned int year, float latitude, float longitude)
 		{
@@ -1184,6 +1211,7 @@ namespace BIO
 			tests.AddTestFunction(&DateTime::Test);
 			tests.AddTestFunction(&GPS::Test);
 			tests.AddTestFunction(&LibraryTests);
+			tests.AddTestFunction(&Sky::Tests);
 
 			tests.ExecuteTests();
 

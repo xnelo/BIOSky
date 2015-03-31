@@ -182,7 +182,7 @@ namespace BIO
 		*			position the sun, moon, stars, and moon phase.
 		*/
 		BIOSKY_API SkyData CalculateSkyData(float standardTime, float UTCoffset, DATE_MONTH month, unsigned int day, unsigned int year, float latitude, float longitude);
-
+		
 		/**
 		* Calculates the rotation angle of the stars around the celestial north
 		* pole depending on time and location.

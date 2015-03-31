@@ -40,19 +40,106 @@
 
 #include <algorithm>
 
+#include <iostream>
+#include <fstream>
+
 namespace BIO
 {
 	namespace SKY
 	{
-		Sky::Sky(IDomeGeometry * skydome) : _skydome(skydome), _moonPos(), _sunPos(), _error(OK)
+		Sky::Sky(IDomeGeometry * skydome) : _skydome(skydome), _moonPos(), _sunPos(), _error(OK), _lightInterpolation()
 		{
 			if (_skydome == NULL)
 				_error = BIOSKY_FAILED_TO_INIT__GEOMETRY_NULL;
+
+			//set up skylight map
+			//if input is nothing
+			{
+				InterpolationData data;
+				data.angle = 0.0f; //0 Degrees.
+				data.light.R = 1.0f;
+				data.light.G = 1.0f;
+				data.light.B = 251.0f / 255.0f;
+				_lightInterpolation.push_back(data);
+
+				data.angle = 84.0f * MATH::DegreesToRadiansf;
+				data.light.R = 1.0f;
+				data.light.G = 1.0f;
+				data.light.B = 251.0f / 255.0f;
+				_lightInterpolation.push_back(data);
+
+				data.angle = 94.0f * MATH::DegreesToRadiansf;
+				data.light.R = 1.0f;
+				data.light.G = 126.0f / 255.0f;
+				data.light.B = 0.0f;
+				_lightInterpolation.push_back(data);
+
+				data.angle = 96.0f * MATH::DegreesToRadiansf;
+				data.light.R = 153.0f / 255.0f;
+				data.light.G = 153.0f / 255.0f;
+				data.light.B = 150.0f / 255.0f;
+				_lightInterpolation.push_back(data);
+
+				data.angle = 108.0f * MATH::DegreesToRadiansf;
+				data.light.R = 102.0f / 255.0f;
+				data.light.G = 102.0f / 255.0f;
+				data.light.B = 100.0f / 255.0f;
+				_lightInterpolation.push_back(data);
+			}
 		}
 
 		Sky::~Sky()
 		{
+			_lightInterpolation.clear();
+
 			_skydome = NULL;
+		}
+
+		LightData Sky::CalculateSkyLights()
+		{
+			LightData rtn;
+
+			//calculate sun ligh
+			for (int i = 0; i < _lightInterpolation.size(); i++)
+			{
+				if (_sunPos.Zenith < _lightInterpolation[i].angle)
+				{
+					InterpolationData p1 = _lightInterpolation[i];
+					InterpolationData p2 = _lightInterpolation[i-1];
+					float interpolationAmount = ((_sunPos.Zenith - p2.angle) / (p1.angle - p2.angle));
+
+					//interpolate (i, i-1)
+					rtn.Color.A = 1.0f;
+					rtn.Color.R = p2.light.R + (p1.light.R - p2.light.R) * interpolationAmount;
+					rtn.Color.G = p2.light.G + (p1.light.G - p2.light.G) * interpolationAmount;
+					rtn.Color.B = p2.light.B + (p1.light.B - p2.light.B) * interpolationAmount;
+
+					std::cout << "Interpolating[" << i << ":" << i - 1 << "]: AMT:" << interpolationAmount << " RGB: " << rtn.Color.R << "," << rtn.Color.G << "," << rtn.Color.B << std::endl;
+					
+					return rtn;
+				}
+				else if (_sunPos.Zenith == _lightInterpolation[i].angle)
+				{
+					rtn.Color.A = 1.0f;
+					rtn.Color.R = _lightInterpolation[i].light.R;
+					rtn.Color.G = _lightInterpolation[i].light.G;
+					rtn.Color.B = _lightInterpolation[i].light.B;
+
+					std::cout << "Interpolating: Returning item " << i << std::endl;
+
+					return rtn;
+				}
+			}
+
+			std::cout << "Interpolating: Returning last item \n";
+
+			//otherwise return the last item
+			rtn.Color.A = 1.0f;
+			rtn.Color.R = _lightInterpolation.back().light.R;
+			rtn.Color.G = _lightInterpolation.back().light.G;
+			rtn.Color.B = _lightInterpolation.back().light.B;
+
+			return rtn;
 		}
 
 		void Sky::SetMoonPhase(float phase)
@@ -214,11 +301,6 @@ namespace BIO
 			_skydome->UnlockMoonTexture();
 		}
 
-		void Sky::SetStarPosition(float zenith, float rotation)
-		{
-			_skydome->SetStarRotation(zenith, rotation, 0);
-		}
-
 		void Sky::SetSunPosition(float SolarAzimuth, float SolarZenith)
 		{
 			_sunPos.Azimuth = SolarAzimuth;
@@ -359,6 +441,53 @@ namespace BIO
 		//^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 		//End private Functions
 		///////////////////////////////////////////////////////////////////////
+
+#if BIOSKY_TESTING == 1
+
+		bool Sky::Tests(XNELO::TESTING::Test * test)
+		{
+			test->SetName("Sky Class Tests");
+
+			/*
+			std::ofstream file;
+			file.open("SkyData.txt");
+			file << "Zenith,r,g,b" << std::endl;
+
+			double maxZenith = 210.0;
+			double minZenith = 0;
+			int samples = 300;
+
+			for (int i = 0; i < samples; i++)
+			{
+
+				double zenith = (i * (maxZenith/samples)) * MATH::DegreesToRadiansf;
+
+				double T = 2;
+				PerezYxyCoefficients coeffs = GetPerezCoefficientsForTurbidity(T); //this doesn't need to be called every time this function is called.
+				YyxColor sunYyx = GetYyxColorForZenithAndTurbidity(zenith, T);//this doesn't need to be called every time this function is called.
+
+				YyxColor Yyx;
+				double gamma;
+				RGBColor rgb;
+
+				gamma = GetPerezGamma(zenith, 1.0f, zenith, 1.0f);
+				//if (MATH::BIO_PI2 < pointZenith)
+				//	pointZenith = MATH::BIO_PI2;
+				Yyx.Y = sunYyx.Y * GetPerezLuminance(zenith, gamma, coeffs.Y) / GetPerezLuminance(0, zenith, coeffs.Y);
+				Yyx.x = sunYyx.x * GetPerezLuminance(zenith, gamma, coeffs.x) / GetPerezLuminance(0, zenith, coeffs.x);
+				Yyx.y = sunYyx.y * GetPerezLuminance(zenith, gamma, coeffs.y) / GetPerezLuminance(0, zenith, coeffs.y);
+
+				rgb = GetRGBColorFromYxy(Yyx);
+				
+				file << zenith * MATH::RadiansToDegreesf << "," << rgb.red * 255 << "," << rgb.green * 255 << "," << rgb.blue * 255 << std::endl;
+			}
+
+			file.close();
+			*/
+
+			return test->GetSuccess();
+		}
+#endif
 	}//end namespace SKY
 }//end namespace BIO
 

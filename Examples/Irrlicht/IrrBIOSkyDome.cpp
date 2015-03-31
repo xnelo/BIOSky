@@ -37,7 +37,7 @@
 
 #include <iostream>
 
-IrrBIOSkyDome::IrrBIOSkyDome(irr::scene::ISceneNode * parent, irr::scene::ISceneManager * sm, irr::s32 id) : 
+IrrBIOSkyDome::IrrBIOSkyDome(irr::scene::ISceneNode * parent, irr::scene::ISceneManager * sm, irr::s32 id) :
 irr::scene::ISceneNode(parent, sm, id),
 _bBox(),
 _geometry(NULL),
@@ -50,7 +50,8 @@ _material(),
 _vertData(NULL),
 _nightGeometry(NULL),
 _nightMaterial(),
-_nightTexture(NULL)
+_nightTexture(NULL),
+_skyLight(NULL)
 {
 	
 	_material.Wireframe = false;
@@ -197,10 +198,25 @@ _nightTexture(NULL)
 	_nightMaterial.UseMipMaps = false;
 	_nightMaterial.MaterialType = irr::video::E_MATERIAL_TYPE::EMT_TRANSPARENT_ALPHA_CHANNEL;
 	//-----------------------------------------------------
+
+	//setup the sky light
+	_skyLight = sm->addLightSceneNode();
+	irr::video::SLight & l = _skyLight->getLightData();
+	l.Direction = irr::core::vector3df(0, 0, 0);
+	l.Type = irr::video::ELT_DIRECTIONAL;
+	l.CastShadows = false;
+
+	_skyLight->setPosition(irr::core::vector3df(0, 0, 0));
 }
 
 IrrBIOSkyDome::~IrrBIOSkyDome()
 {
+	if (_skyLight)
+	{
+		_skyLight->removeAll();
+		_skyLight = NULL;
+	}
+
 	if (_vertData)
 	{
 		delete _vertData;
@@ -337,6 +353,17 @@ void IrrBIOSkyDome::SetMoonPosition(float unitX, float unitY, float unitZ)
 		unitZ * _radius
 		)
 		);
+}
+
+void IrrBIOSkyDome::SetSkyLight(BIO::SKY::LightData & data)
+{
+	irr::video::SLight & l = _skyLight->getLightData();
+	l.AmbientColor = irr::video::SColorf(data.AmbientColor.R, data.AmbientColor.G, data.AmbientColor.B, data.AmbientColor.A); //0.3f, 0.3f, 0.3f, 1.0f);
+	l.SpecularColor = irr::video::SColorf(0.4f, 0.4f, 0.4f, 1);
+	l.DiffuseColor = irr::video::SColorf(data.Color.R, data.Color.G, data.Color.B, data.Color.A);//1.0f, 1.0f, 1.0f, 1.0f);
+	
+	_skyLight->setRotation(irr::core::vector3df(65.0f, 129.0f, 12.0f));
+	
 }
 
 void IrrBIOSkyDome::SetStarRotation(float x, float y, float z)

@@ -37,6 +37,7 @@
 #define ___BIOSKY_IDOMEGEOMETRY_HPP__2015___
 
 #include "IDomeVertecies.hpp"
+#include "LightData.hpp"
 
 namespace BIO
 {
@@ -109,6 +110,11 @@ namespace BIO
 			*			radius of the dome.
 			*/
 			virtual void SetMoonPosition(float unitX, float unitY, float unitZ) = 0;
+
+			/**
+			* Set the sky light data
+			*/
+			virtual void SetSkyLight(LightData & data) = 0;
 
 			/**
 			* Set the rotation of the Stars.

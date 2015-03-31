@@ -38,6 +38,7 @@
 
 #include "Error.hpp"
 #include "SkyPosition.hpp"
+#include "LightData.hpp"
 
 namespace BIO
 {
@@ -46,6 +47,17 @@ namespace BIO
 		class ISky
 		{
 		public:
+			/**
+			* Calculate the Color of the skylights. This function depends on 
+			* the position of the sun and moon to determin the color of the 
+			* lights due to sky phenomena.
+			*
+			* @NOTE This function depends on sun and moon positions.
+			*
+			* @return Returns a LightData object.
+			*/
+			virtual LightData CalculateSkyLights() = 0;
+
 			/**
 			* Get the error code for this class. If the return value is 0 or ==
 			* BIO::SKY::OK then there is no error. If the value is != 0 then
@@ -96,6 +108,11 @@ namespace BIO
 			*			the moon is completely visible.
 			*/
 			virtual void SetMoonVisibility(float visibility) = 0;
+
+			/**
+			* Set SkyLight Data.
+			*/
+			virtual void SetSkyLights(LightData & lightData) = 0;
 
 			/**
 			* Set the position of the Stars.
@@ -166,11 +183,13 @@ namespace BIO
 			*/
 			virtual void UpdateMoonPosition() = 0;
 
+			virtual void UpdateSkyLights() = 0;
+
 			/**
 			* Update the position of the North Star according to the current
 			* latitude of the observer.
 			*
-			* @note If an Update functin is called then this function should 
+			* @note If an Update function is called then this function should 
 			*		NOT be called every frame.
 			*/
 			virtual void UpdateStarPosition() = 0;

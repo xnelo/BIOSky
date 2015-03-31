@@ -85,6 +85,7 @@
     <ClInclude Include="include\Error.hpp" />
     <ClInclude Include="include\GPS.hpp" />
     <ClInclude Include="include\ISky.hpp" />
+    <ClInclude Include="include\LightData.hpp" />
     <ClInclude Include="include\lodepng.h" />
     <ClInclude Include="include\MathUtils.hpp" />
     <ClInclude Include="include\SkyData.hpp" />

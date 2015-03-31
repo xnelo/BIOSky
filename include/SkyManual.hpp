@@ -146,6 +146,7 @@ inline BIO::SKY::SkyManual::SkyManual(IDomeGeometry * skydome, float sunAzimuth,
 	//SetStarPosition(.855f, .785f);
 
 	UpdateSkyColor();
+	UpdateSkyLights();
 }
 
 inline BIO::SKY::SkyManual::~SkyManual()
