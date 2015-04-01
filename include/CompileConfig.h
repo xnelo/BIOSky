@@ -90,7 +90,7 @@
 #endif  /* NULL */
 
 //Do we include tests... They are off by default
-#define BIOSKY_INCLUDE_TESTS
+//#define BIOSKY_INCLUDE_TESTS
 #ifdef BIOSKY_INCLUDE_TESTS
 	#define BIOSKY_TESTING 1
 

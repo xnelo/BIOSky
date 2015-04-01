@@ -41,6 +41,7 @@
 #include "ISky.hpp"
 #include "IDomeGeometry.hpp"
 #include "MathUtils.hpp"
+#include <vector>
 
 namespace BIO
 {

@@ -100,7 +100,7 @@ namespace BIO
 			LightData rtn;
 
 			//calculate sun ligh
-			for (int i = 0; i < _lightInterpolation.size(); i++)
+			for (unsigned int i = 0; i < _lightInterpolation.size(); i++)
 			{
 				if (_sunPos.Zenith < _lightInterpolation[i].angle)
 				{
@@ -292,7 +292,7 @@ namespace BIO
 			//update pixels as needed
 			unsigned char * pixel = _skydome->GetMoonTexturePixels();
 
-			for (int x = 3; x < ((moonImageData.width * moonImageData.height * 4) - 3); x = x + 4)
+			for (unsigned int x = 3; x < ((moonImageData.width * moonImageData.height * 4) - 3); x = x + 4)
 			{
 				pixel[x] = std::min(pixel[x],(unsigned char)(255 * visibility));
 			}
