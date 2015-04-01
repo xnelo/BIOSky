@@ -114,6 +114,9 @@
     <ClCompile Include="source\Sky.cpp" />
     <ClCompile Include="source\MoonTexture.c" />
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="ReadMe.txt" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
